@@ -1,5 +1,3 @@
-import TelegramBot from "node-telegram-bot-api";
-import fs from "fs";
 import {
   projectsStore,
   saveProjects,
@@ -7,9 +5,10 @@ import {
   isProjectValid,
   getUserValidProject
 } from "./projectStore.js";
-import { getMetadataMenu, handleMetadataCallback } from "./metadata.js";
-import { getWalletsMenu, handleWalletsCallback } from "./wallets.js";
+import { handleMetadataCallback } from "./metadata.js";
+import { handleWalletsCallback } from "./wallets.js";
 import { getUnavailableMenu } from "./unavailable.js";
+
 
 // === BOT INIT ===
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
