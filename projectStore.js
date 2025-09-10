@@ -1,38 +1,59 @@
-// Simple in-memory storage for projects
-export const projectStore = {
-  projects: {},
+import { randomUUID } from "crypto";
 
-  addProject(chatId, name, symbol = "", description = "", wallet = "") {
-    if (!this.projects[chatId]) this.projects[chatId] = [];
-    const newProj = {
-      id: Date.now().toString(),
-      name,
-      symbol,
-      description,
-      wallet
-    };
-    this.projects[chatId].push(newProj);
-    return newProj;
-  },
+class ProjectStore {
+  constructor() {
+    this.projects = {}; // { chatId: [ {id, name, symbol, description, wallet} ] }
+    this.editing = {}; // { chatId: { projectId, field } }
+  }
 
   getProjects(chatId) {
     return this.projects[chatId] || [];
-  },
+  }
 
   getProject(chatId, projectId) {
-    return this.getProjects(chatId).find(p => p.id === projectId);
-  },
+    return this.getProjects(chatId).find((p) => p.id === projectId);
+  }
 
-  updateProject(chatId, projectId, updates) {
-    const proj = this.getProject(chatId, projectId);
-    if (proj) {
-      Object.assign(proj, updates);
-    }
+  addProject(chatId, name) {
+    const proj = {
+      id: randomUUID(),
+      name,
+      symbol: "N/A",
+      description: "N/A",
+      wallet: "N/A",
+    };
+    if (!this.projects[chatId]) this.projects[chatId] = [];
+    this.projects[chatId].push(proj);
     return proj;
-  },
+  }
 
   deleteProject(chatId, projectId) {
     if (!this.projects[chatId]) return;
-    this.projects[chatId] = this.projects[chatId].filter(p => p.id !== projectId);
+    this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
   }
-};
+
+  updateProject(chatId, projectId, field, value) {
+    const proj = this.getProject(chatId, projectId);
+    if (proj) {
+      proj[field] = value;
+    }
+  }
+
+  setEditing(chatId, projectId, field) {
+    this.editing[chatId] = { projectId, field };
+  }
+
+  isEditing(chatId) {
+    return !!this.editing[chatId];
+  }
+
+  getEditing(chatId) {
+    return this.editing[chatId];
+  }
+
+  clearEditing(chatId) {
+    delete this.editing[chatId];
+  }
+}
+
+export const projectStore = new ProjectStore();
