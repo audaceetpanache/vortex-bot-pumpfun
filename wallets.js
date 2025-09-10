@@ -1,26 +1,19 @@
-// wallets.js
-import { projectStore } from "./projectStore.js";
+import { projects } from "./projectStore.js";
 
-export function getWalletsMenu(userId, projectId) {
-  const project = projectStore.getProject(userId, projectId);
-  if (!project) {
-    return {
-      text: "❌ Project not found",
-      reply_markup: {
-        inline_keyboard: [[{ text: "⬅️ Back", callback_data: "your_projects" }]],
-      },
-    };
-  }
+export function getWalletsMenu(projectId) {
+  const text = `🏦 Project Wallets
+Project: ${projectId}
+Select a wallet to view details`;
 
   return {
-    text: `🏦 Project Wallets\nProject: ${project.id}\nSelect a wallet to view details`,
+    text,
     reply_markup: {
       inline_keyboard: [
-        [{ text: "➕ Create Wallet", callback_data: `wallet_create_${project.id}` }],
-        [{ text: "📥 Import Wallet", callback_data: `wallet_import_${project.id}` }],
-        [{ text: "👑 Import Creator", callback_data: `wallet_creator_${project.id}` }],
-        [{ text: "⬅️ Back", callback_data: `project_${project.id}` }],
-      ],
-    },
+        [{ text: "➕ Create Wallets", callback_data: `wallet_create_${projectId}` },
+         { text: "📥 Import Wallets", callback_data: `wallet_import_${projectId}` }],
+        [{ text: "👑 Import Creator", callback_data: `wallet_creator_${projectId}` }],
+        [{ text: "⬅️ Back", callback_data: `project_${projectId}` }]
+      ]
+    }
   };
 }
