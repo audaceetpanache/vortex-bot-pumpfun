@@ -50,14 +50,15 @@ function getHomeMenu() {
     text: "🏠 Menu principal",
     reply_markup: {
       inline_keyboard: [
-        [{ text: "📂 Mes projets", callback_data: "my_projects" }],
-        [{ text: "➕ Créer un nouveau projet", callback_data: "create_project" }],
-        [{ text: "📌 Bouton 1", callback_data: "unavailable_home" }],
-        [{ text: "📌 Bouton 2", callback_data: "unavailable_home" }],
-        [{ text: "📌 Bouton 3", callback_data: "unavailable_home" }],
-        [{ text: "📌 Bouton 4", callback_data: "unavailable_home" }],
-        [{ text: "📌 Bouton 5", callback_data: "unavailable_home" }],
-        [{ text: "📌 Bouton 6", callback_data: "unavailable_home" }],
+        [{ text: "📂 Your Projects", callback_data: "my_projects" }],
+        [{ text: "🚀 Create New Project", callback_data: "create_project" }],
+        [{ text: "🚀 SPAM LAUNCH", callback_data: "unavailable_home" }],
+        [{ text: "🤑 BUMP BOT 🤑", callback_data: "unavailable_home" }],
+        [{ text: "💰 GET ALL SOL", callback_data: "unavailable_home" }],
+        [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable_home" }],
+        [{ text: "🔗 Referals", callback_data: "unavailable_home" }],
+        [{ text: "❓ Help", callback_data: "unavailable_home" }],
+        [{ text: "👥 Discord", callback_data: "unavailable_home" }],
         [{ text: "⬅️ Back", callback_data: "back_start" }]
       ]
     }
