@@ -3,6 +3,7 @@ const TelegramBot = require("node-telegram-bot-api");
 
 const TOKEN = process.env.BOT_TOKEN;
 const URL = process.env.RENDER_EXTERNAL_URL;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "default_secret";
 
 if (!TOKEN) {
   console.error("❌ BOT_TOKEN manquant dans les variables d'environnement");
@@ -14,26 +15,25 @@ const app = express();
 
 app.use(express.json());
 
-// Commande /start
+// Commandes
 bot.onText(/\/start/, (msg) => {
-  console.log("➡️ Commande /start reçue :", msg.chat.username || msg.chat.id);
+  console.log("➡️ /start reçu :", msg.chat.username || msg.chat.id);
   bot.sendMessage(msg.chat.id, "👋 Bienvenue ! Utilise /home pour continuer.");
 });
 
-// Commande /home
 bot.onText(/\/home/, (msg) => {
-  console.log("➡️ Commande /home reçue :", msg.chat.username || msg.chat.id);
+  console.log("➡️ /home reçu :", msg.chat.username || msg.chat.id);
   bot.sendMessage(msg.chat.id, "🏠 Tu es dans le menu principal.");
 });
 
-// Endpoint webhook
-app.post(`/webhook/${TOKEN}`, (req, res) => {
-  console.log("📩 Update reçu de Telegram :", req.body);
+// Endpoint webhook avec SECRET
+app.post(`/webhook/${WEBHOOK_SECRET}`, (req, res) => {
+  console.log("📩 Update reçu de Telegram");
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
 
-// Home page (Render check)
+// Page d'accueil
 app.get("/", (req, res) => {
   res.send("Bot is running 🚀");
 });
@@ -42,6 +42,7 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, async () => {
   console.log(`✅ Serveur en ligne sur port ${PORT}`);
 
-  await bot.setWebHook(`${URL}/webhook/${TOKEN}`);
+  // Configurer le webhook avec SECRET au lieu du token
+  await bot.setWebHook(`${URL}/webhook/${WEBHOOK_SECRET}`);
   console.log("✅ Webhook configuré avec succès !");
 });
