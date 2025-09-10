@@ -67,13 +67,23 @@ function getHomeMenu() {
 
 function getSettingsMenu() {
   return {
-    text: "⚙️ Réglages généraux",
+    text: "⚙️ Settings
+
+Current Settings:
+• Tip Amount: Disabled
+• Auto Tip: Enabled
+• Max Tip: 0.01 SOL
+• Priority Fee: 0.0005 SOL
+• Buy Slippage: 15%
+• Sell Slippage: 15%
+• Safe Settings: Enabled",
     reply_markup: {
       inline_keyboard: [
-        [{ text: "Réglage 1", callback_data: "unavailable_settings" }],
-        [{ text: "Réglage 2", callback_data: "unavailable_settings" }],
-        [{ text: "Réglage 3", callback_data: "unavailable_settings" }],
+        [{ text: "💰 TIP: ❌", callback_data: "unavailable_settings" }],[{ text: "✅ AUTO TIP", callback_data: "unavailable_settings" }],[{ text: "📊 MAX: 0.01 SOL", callback_data: "unavailable_settings" }],
+        [{ text: "⚡️ PRIO: 0.0005 SOL", callback_data: "unavailable_settings" }],[{ text: "📈 BUY: 15%", callback_data: "unavailable_settings" }],[{ text: "📉 SELL: 15%", callback_data: "unavailable_settings" }],
+        [{ text: "🔓 UI SECURITY 🟢", callback_data: "unavailable_settings" }],
         [{ text: "⬅️ Back", callback_data: "back_start" }]
+        [{ text: "🎯 LSNIPE Settings", callback_data: "unavailable_settings" }],[{ text: "📦 LBS Settings", callback_data: "unavailable_settings" }],
       ]
     }
   };
