@@ -28,13 +28,14 @@ function getStartMenu() {
 🔥 Where the magic happens! 🔥
 
 Available Features:
-• 🚀 Launch pump.fun tokens
-• 👛 Create or import multiple wallets
-• 💸 Auto-fund wallets with SOL disperser
-• 📊 Manage pump.fun / Raydium tokens
-• ⏳ Delayed bundles on pump.fun
-• 🔄 Advanced swap manager (intervals, sell-all)
-• 🛡️ Anti-MEV protection`,
+• Launch pump.fun tokens
+• Create or import multiple wallets
+• Auto-fund wallets with SOL disperser
+• Bundle up to 24 wallets
+• CTO pump.fun/raydium tokens
+• Delayed bundles on pump.fun
+• Advanced swap manager with intervals, sell-all functions.
+• Anti-MEV protection`,
     reply_markup: {
       inline_keyboard: [
         [
