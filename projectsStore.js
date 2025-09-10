@@ -1,56 +1,35 @@
-// projectsStore.js
+import fs from "fs";
 
-const projectsStore = {};
+export let projectsStore = {};
 
-/**
- * Crée un projet pour un utilisateur
- */
-function createProject(userId, name) {
-  if (!projectsStore[userId]) {
-    projectsStore[userId] = [];
-  }
-  const project = {
-    id: Date.now().toString(),
-    name,
-    metadata: {
-      name: null,
-      symbol: null,
-      description: null,
-      twitter: null,
-      telegram: null,
-      website: null,
-      image: null,
-      deployed: false
-    },
-    walletComplete: false
-  };
-  projectsStore[userId].push(project);
-  return project;
+const FILE = "./db.json";
+
+if (fs.existsSync(FILE)) {
+  projectsStore = JSON.parse(fs.readFileSync(FILE));
 }
 
-/**
- * Récupère les projets d’un utilisateur
- */
-function getProjects(userId) {
-  return projectsStore[userId] || [];
+export function saveProjects() {
+  fs.writeFileSync(FILE, JSON.stringify(projectsStore, null, 2));
 }
 
-/**
- * Récupère un projet précis
- */
-function getProject(userId, projectId) {
-  return (projectsStore[userId] || []).find(p => p.id === projectId);
+export function generateId() {
+  return Math.random().toString(36).substring(2, 8);
 }
 
-/**
- * Met à jour un champ metadata
- */
-function updateMetadata(userId, projectId, field, value) {
-  const project = getProject(userId, projectId);
-  if (project) {
-    project.metadata[field] = value;
-  }
-  return project;
+// ✅ Check if a project is fully valid
+export function isProjectValid(project) {
+  return (
+    project.metadata &&
+    project.metadata.deployed &&
+    project.metadata.name &&
+    project.metadata.symbol &&
+    project.metadata.description &&
+    project.wallets &&
+    project.wallets.length > 0
+  );
 }
 
-module.exports = { createProject, getProjects, getProject, updateMetadata };
+export function getUserValidProject(userId) {
+  const projects = projectsStore[userId] || [];
+  return projects.find((p) => isProjectValid(p));
+}
