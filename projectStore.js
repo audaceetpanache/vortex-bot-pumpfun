@@ -1,31 +1,34 @@
-// projectStore.js
 class ProjectStore {
   constructor() {
-    this.projects = {}; // chatId -> array of projects
+    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
   }
 
   getProjects(chatId) {
-    if (!this.projects[chatId]) {
-      this.projects[chatId] = [];
-    }
+    if (!this.projects[chatId]) this.projects[chatId] = [];
     return this.projects[chatId];
   }
 
-  addProject(chatId, project) {
-    const projects = this.getProjects(chatId);
+  getProject(chatId, projectId) {
+    const list = this.getProjects(chatId);
+    return list.find((p) => p.id === projectId);
+  }
+
+  addProject(chatId, name) {
+    const list = this.getProjects(chatId);
+    const newId = list.length > 0 ? list[list.length - 1].id + 1 : 1;
     const newProject = {
-      id: Date.now().toString(),
-      name: project.name || "Unnamed",
-      symbol: project.symbol || "N/A",
-      description: project.description || "No description",
-      wallet: project.wallet || "Not set",
+      id: newId,
+      name,
+      symbol: "",
+      description: "",
+      wallet: "",
     };
-    projects.push(newProject);
+    list.push(newProject);
     return newProject;
   }
 
-  getProject(chatId, projectId) {
-    return this.getProjects(chatId).find(p => p.id === projectId);
+  deleteProject(chatId, projectId) {
+    this.projects[chatId] = this.getProjects(chatId).filter((p) => p.id !== projectId);
   }
 
   updateProject(chatId, projectId, updates) {
@@ -34,12 +37,6 @@ class ProjectStore {
       Object.assign(project, updates);
     }
     return project;
-  }
-
-  removeProject(chatId, projectId) {
-    this.projects[chatId] = this.getProjects(chatId).filter(
-      p => p.id !== projectId
-    );
   }
 }
 
