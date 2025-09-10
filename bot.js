@@ -208,3 +208,159 @@ bot.on("callback_query", (query) => {
 });
 
 export default bot;
+
+// === FICHE PROJET ===
+function showProject(chatId, userId, projectId) {
+  const data = loadProjects();
+  const project = data.users[userId].projects.find(p => p.id === projectId);
+
+  if (!project) {
+    bot.sendMessage(chatId, "❌ Projet introuvable.");
+    return;
+  }
+
+  const status = project.metadata.deployed && project.wallets.length > 0
+    ? "✅ Metadata deployed"
+    : "❌ Metadata not yet deployed";
+
+  const text = `🎯 Project (${project.id})
+Name: ${project.metadata.name}
+Status: ${status}`;
+
+  bot.sendMessage(chatId, text, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "📝 Token Metadata", callback_data: `metadata_${project.id}` }],
+        [{ text: "👛 Project Wallets", callback_data: `wallets_${project.id}` }],
+        [{ text: "⬅️ Back", callback_data: "your_projects" }],
+      ],
+    },
+  });
+}
+
+// === TOKEN METADATA ===
+function showMetadata(chatId, userId, projectId) {
+  const data = loadProjects();
+  const project = data.users[userId].projects.find(p => p.id === projectId);
+
+  if (!project) {
+    bot.sendMessage(chatId, "❌ Projet introuvable.");
+    return;
+  }
+
+  const md = project.metadata;
+
+  const text = `🎯 Project (${project.id}) Metadata
+Select a field to edit:
+${md.deployed ? "✅ Metadata deployed" : "❌ Metadata not yet deployed"}`;
+
+  bot.sendMessage(chatId, text, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: "Name", callback_data: `edit_name_${project.id}` },
+          { text: "Symbol", callback_data: `edit_symbol_${project.id}` },
+        ],
+        [
+          { text: "Description", callback_data: `edit_description_${project.id}` },
+          { text: "Twitter", callback_data: `edit_twitter_${project.id}` },
+        ],
+        [
+          { text: "Telegram", callback_data: `edit_telegram_${project.id}` },
+          { text: "Website", callback_data: `edit_website_${project.id}` },
+        ],
+        [
+          { text: "Image", callback_data: `edit_image_${project.id}` }
+        ],
+        [
+          { text: "🚀 Deploy Metadata", callback_data: `deploy_${project.id}` }
+        ],
+        [{ text: "⬅️ Back", callback_data: `project_${project.id}` }]
+      ],
+    },
+  });
+}
+
+// === CALLBACKS MIS À JOUR ===
+bot.on("callback_query", (query) => {
+  const chatId = query.message.chat.id;
+  const userId = query.from.id;
+  const data = query.data;
+
+  // Navigation existante
+  switch (data) {
+    case "home":
+      showHome(chatId, query.from.first_name);
+      break;
+
+    case "settings":
+      showSettings(chatId);
+      break;
+
+    case "lsnipesettings":
+      showLsnipe(chatId);
+      break;
+
+    case "unavailable":
+      showUnavailable(chatId);
+      break;
+
+    case "your_projects": {
+      const store = loadProjects();
+      const projects = store.users[userId]?.projects || [];
+
+      if (projects.length === 0) {
+        bot.sendMessage(chatId, "📂 Aucun projet trouvé. Utilise *Create new Project* pour commencer.", { parse_mode: "Markdown" });
+      } else {
+        const buttons = projects.map(p => [{ text: p.metadata.name || p.id, callback_data: `project_${p.id}` }]);
+        bot.sendMessage(chatId, "📂 Vos projets :", {
+          reply_markup: { inline_keyboard: [...buttons, [{ text: "⬅️ Back", callback_data: "home" }]] }
+        });
+      }
+      break;
+    }
+
+    case "create_project":
+      bot.sendMessage(chatId, "📝 Quel est le *nom* de ton projet ?", { parse_mode: "Markdown" });
+      bot.once("message", (response) => {
+        const name = response.text;
+        let store = loadProjects();
+        if (!store.users[userId]) store.users[userId] = { projects: [] };
+
+        const newProject = {
+          id: `proj_${Date.now()}`,
+          metadata: {
+            name,
+            symbol: "",
+            description: "",
+            twitter: "",
+            telegram: "",
+            website: "",
+            image: "",
+            deployed: false,
+          },
+          wallets: [],
+        };
+
+        store.users[userId].projects.push(newProject);
+        saveProjects(store);
+
+        bot.sendMessage(chatId, `✅ Projet *${name}* créé avec succès !`, { parse_mode: "Markdown" });
+      });
+      break;
+  }
+
+  // === Gestion dynamique des callbacks ===
+  if (data.startsWith("project_")) {
+    const projectId = data.split("_")[1];
+    showProject(chatId, userId, projectId);
+  }
+
+  if (data.startsWith("metadata_")) {
+    const projectId = data.split("_")[1];
+    showMetadata(chatId, userId, projectId);
+  }
+
+  bot.answerCallbackQuery(query.id);
+});
+
