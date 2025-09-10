@@ -1,10 +1,15 @@
-export function getLsniperSettingsMenu() {
+import { getUnavailableMenu } from "./unavailable.js";
+
+export function getLSnipeSettingsMenu() {
   return {
-    inline_keyboard: [
-      [{ text: "⚡ Auto-snipe ON/OFF", callback_data: "ls_unavailable" }],
-      [{ text: "💰 Budget", callback_data: "ls_unavailable" }],
-      [{ text: "⏱ Délai", callback_data: "ls_unavailable" }],
-      [{ text: "⬅️ Retour", callback_data: "home" }],
-    ],
+    text: "⚙️ LSnip Settings\n\nThese features are under construction 🚧",
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "⏱ Sniping Speed", callback_data: "unavailable" }],
+        [{ text: "💰 Max Buy Amount", callback_data: "unavailable" }],
+        [{ text: "📊 Risk Management", callback_data: "unavailable" }],
+        [{ text: "⬅️ Back", callback_data: "home" }]
+      ]
+    }
   };
 }
