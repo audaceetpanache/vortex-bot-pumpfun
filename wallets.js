@@ -1,7 +1,13 @@
 import { projectsStore, saveProjects } from "./projectStore.js";
 
+/**
+ * Génère le menu Wallets pour un projet
+ */
 export function getWalletsMenu(projectId) {
   const project = projectsStore[projectId];
+  if (!project) {
+    return { text: "❌ Project not found", inline_keyboard: [] };
+  }
 
   const text = `🏦 Project Wallets
 Project: ${projectId}
@@ -23,33 +29,29 @@ Select a wallet to view details`;
   return { text, inline_keyboard };
 }
 
-export function handleWalletsCallback(bot, msg, action, projectId) {
-  const chatId = msg.message.chat.id;
+/**
+ * Gère les interactions Wallets
+ */
+export function handleWalletsCallback(bot, callbackQuery, action, projectId) {
+  const chatId = callbackQuery.message.chat.id;
   const project = projectsStore[projectId];
   if (!project) return;
 
-  switch (action) {
-    case "create_wallet":
-    case "import_wallet":
-    case "import_creator":
-      bot.sendMessage(chatId, "✏️ Please enter the wallet name:");
-      bot.once("message", (nameResponse) => {
-        const wallet = { name: nameResponse.text };
+  if (action === "create_wallet" || action === "import_wallet" || action === "import_creator") {
+    bot.sendMessage(chatId, "✏️ Please enter a name for this wallet:");
 
-        bot.sendMessage(chatId, "🔑 Please enter the private key:");
-        bot.once("message", (keyResponse) => {
-          wallet.privateKey = keyResponse.text;
-          project.wallets.push(wallet);
-          saveProjects();
+    bot.once("message", (msg1) => {
+      const walletName = msg1.text;
+      bot.sendMessage(chatId, "🔑 Please send the private key for this wallet:");
 
-          bot.sendMessage(chatId, `✅ Wallet '${wallet.name}' added successfully!`, {
-            reply_markup: { inline_keyboard: getWalletsMenu(projectId).inline_keyboard }
-          });
-        });
+      bot.once("message", (msg2) => {
+        const privateKey = msg2.text;
+        project.wallets.push({ name: walletName, privateKey });
+        saveProjects();
+        bot.sendMessage(chatId, `✅ Wallet "${walletName}" added to project ${projectId}.`);
+        const { text, inline_keyboard } = getWalletsMenu(projectId);
+        bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard } });
       });
-      break;
-
-    default:
-      bot.sendMessage(chatId, "❌ Unknown wallet action");
+    });
   }
 }
