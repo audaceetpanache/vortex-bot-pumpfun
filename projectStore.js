@@ -2,12 +2,11 @@
 
 class ProjectStore {
   constructor() {
-    // { chatId: [ {id, name, symbol, description, wallet} ] }
-    this.projects = {};
-    // { chatId: { projectId, field } }
-    this.editing = {};
+    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
+    this.editing = {};  // { chatId: { projectId, field } }
   }
 
+  // --- Gestion des projets ---
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
@@ -20,34 +19,21 @@ class ProjectStore {
       description: "",
       wallet: ""
     };
-
-    if (!this.projects[chatId]) {
-      this.projects[chatId] = [];
-    }
-
+    if (!this.projects[chatId]) this.projects[chatId] = [];
     this.projects[chatId].push(project);
-    return project;
-  }
-
-  getProject(chatId, projectId) {
-    const list = this.getProjects(chatId);
-    return list.find((p) => p.id === projectId);
-  }
-
-  updateProject(chatId, projectId, field, value) {
-    const project = this.getProject(chatId, projectId);
-    if (project) {
-      project[field] = value;
-    }
     return project;
   }
 
   deleteProject(chatId, projectId) {
     if (!this.projects[chatId]) return;
-    this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
+    this.projects[chatId] = this.projects[chatId].filter(p => p.id !== projectId);
   }
 
-  // --- Gestion de l'édition
+  getProject(chatId, projectId) {
+    return this.getProjects(chatId).find(p => p.id === projectId);
+  }
+
+  // --- Edition ---
   startEditing(chatId, projectId, field) {
     this.editing[chatId] = { projectId, field };
   }
@@ -56,20 +42,30 @@ class ProjectStore {
     return this.editing[chatId] || null;
   }
 
-  stopEditing(chatId) {
+  applyEdit(chatId, text) {
+    const editState = this.editing[chatId];
+    if (!editState) return null;
+
+    const project = this.getProject(chatId, editState.projectId);
+    if (!project) return null;
+
+    project[editState.field] = text;
     delete this.editing[chatId];
+    return project;
   }
 
-  // --- Appliquer l'édition (appelé après réception du message texte de l'utilisateur)
-  applyEdit(chatId, value) {
-    const edit = this.isEditing(chatId);
-    if (!edit) return null;
+  // --- Déploiement (enregistrement/mise à jour) ---
+  canDeploy(project) {
+    return project.name && project.symbol && project.description && project.wallet;
+  }
 
-    const { projectId, field } = edit;
-    const updated = this.updateProject(chatId, projectId, field, value);
-
-    this.stopEditing(chatId);
-    return updated;
+  getMissingFields(project) {
+    const missing = [];
+    if (!project.name) missing.push("Nom");
+    if (!project.symbol) missing.push("Symbole");
+    if (!project.description) missing.push("Description");
+    if (!project.wallet) missing.push("Wallet");
+    return missing;
   }
 }
 
