@@ -1,6 +1,5 @@
 // projectStore.js
 
-// On garde les projets en mémoire (pas de base de données pour l'instant)
 const projectsByUser = {};
 
 // Ajouter un projet
@@ -9,7 +8,7 @@ function addProject(userId, name) {
     projectsByUser[userId] = [];
   }
   const newProject = {
-    id: Date.now().toString(), // ID unique basé sur le timestamp
+    id: Date.now().toString(),
     name,
     metadata: null,
     wallets: [],
@@ -18,7 +17,7 @@ function addProject(userId, name) {
   return newProject;
 }
 
-// Récupérer tous les projets d’un utilisateur
+// Récupérer tous les projets
 function getProjects(userId) {
   return projectsByUser[userId] || [];
 }
@@ -32,7 +31,6 @@ function deleteProject(userId, projectId) {
   return true;
 }
 
-// Exporter les fonctions
 export const projectStore = {
   addProject,
   getProjects,
