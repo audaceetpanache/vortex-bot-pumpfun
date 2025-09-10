@@ -49,5 +49,8 @@ export const projectStore = {
     return true;
   },
 
-  // for future: update metadata, add wallets, etc.
-};
+  updateMetadata(userId, projectId, key, value) {
+    const project = this.getProject(userId, projectId);
+    if (!project) return false;
+    project.metadata ||= {};
+    project.metadat
