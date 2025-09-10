@@ -48,7 +48,6 @@ Available Features:
 }
 
 function getHomeMenu() {
- function getHomeMenu() {
   return {
     text: `👋 Welcome back!
 
@@ -83,7 +82,6 @@ What’s next? Pick an option below:
     }
   };
 }
-
 
 function getSettingsMenu() {
   return {
