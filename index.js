@@ -46,7 +46,11 @@ function getStartMenu() {
 
 function getHomeMenu() {
   return {
-    text: "🏠 Menu principal",
+    text: `Yo! Nice to see you again! 🔥
+    
+    Wha'ts the move, boss ? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+    
+    Hit the buttons below and let's make it happen:`,
     reply_markup: {
       inline_keyboard: [
         [{ text: "📂 Your Projects", callback_data: "my_projects" }],
