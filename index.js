@@ -198,12 +198,12 @@ app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
       } else if (data === "create_project") {
         const newProj = projectStore.addProject(chatId, "Nouveau projet");
         const menu = getProjectMenu(newProj);
-        await sendMessage(chatId, "🆕 Projet créé :", menu.reply_markup);
+        await sendMessage(chatId, "🆕 New Project added:", menu.reply_markup);
       } else if (data.startsWith("delete_project:")) {
         const projectId = data.split(":")[1];
         projectStore.deleteProject(chatId, projectId);
         const menu = getProjectsListMenu(chatId);
-        await sendMessage(chatId, "🗑️ Projet supprimé.", menu.reply_markup);
+        await sendMessage(chatId, "🗑️ Project deleted", menu.reply_markup);
       } else if (data.startsWith("edit_")) {
         const [action, projectId] = data.split(":");
         const field = action.replace("edit_", "");
