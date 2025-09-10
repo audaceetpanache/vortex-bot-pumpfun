@@ -1,33 +1,38 @@
+// Simple in-memory storage for projects
 export const projectStore = {
   projects: {},
 
+  addProject(chatId, name, symbol = "", description = "", wallet = "") {
+    if (!this.projects[chatId]) this.projects[chatId] = [];
+    const newProj = {
+      id: Date.now().toString(),
+      name,
+      symbol,
+      description,
+      wallet
+    };
+    this.projects[chatId].push(newProj);
+    return newProj;
+  },
+
   getProjects(chatId) {
-    if (!this.projects[chatId]) {
-      this.projects[chatId] = [];
-    }
-    return this.projects[chatId];
+    return this.projects[chatId] || [];
   },
 
-  addProject(chatId, project) {
-    if (!this.projects[chatId]) {
-      this.projects[chatId] = [];
-    }
-    this.projects[chatId].push(project);
-    return project;
+  getProject(chatId, projectId) {
+    return this.getProjects(chatId).find(p => p.id === projectId);
   },
 
-  deleteProject(chatId, index) {
-    if (this.projects[chatId]) {
-      this.projects[chatId].splice(index, 1);
+  updateProject(chatId, projectId, updates) {
+    const proj = this.getProject(chatId, projectId);
+    if (proj) {
+      Object.assign(proj, updates);
     }
+    return proj;
   },
 
-  updateProject(chatId, index, newData) {
-    if (this.projects[chatId] && this.projects[chatId][index]) {
-      this.projects[chatId][index] = {
-        ...this.projects[chatId][index],
-        ...newData,
-      };
-    }
-  },
+  deleteProject(chatId, projectId) {
+    if (!this.projects[chatId]) return;
+    this.projects[chatId] = this.projects[chatId].filter(p => p.id !== projectId);
+  }
 };
