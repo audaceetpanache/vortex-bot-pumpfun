@@ -2,35 +2,34 @@
 
 class ProjectStore {
   constructor() {
-    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
+    this.projects = {}; // { chatId: [ {id, name, symbol, description, wallet} ] }
     this.editing = {};  // { chatId: { projectId, field } }
   }
 
-  // --- Gestion des projets ---
+  // --- CRUD projets ---
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
 
   addProject(chatId, name = "Nouveau projet") {
-    const project = {
+    if (!this.projects[chatId]) this.projects[chatId] = [];
+    const newProj = {
       id: Date.now().toString(),
       name,
       symbol: "",
       description: "",
-      wallet: ""
+      wallet: "",
     };
-    if (!this.projects[chatId]) this.projects[chatId] = [];
-    this.projects[chatId].push(project);
-    return project;
-  }
-
-  deleteProject(chatId, projectId) {
-    if (!this.projects[chatId]) return;
-    this.projects[chatId] = this.projects[chatId].filter(p => p.id !== projectId);
+    this.projects[chatId].push(newProj);
+    return newProj;
   }
 
   getProject(chatId, projectId) {
     return this.getProjects(chatId).find(p => p.id === projectId);
+  }
+
+  deleteProject(chatId, projectId) {
+    this.projects[chatId] = this.getProjects(chatId).filter(p => p.id !== projectId);
   }
 
   // --- Edition ---
@@ -42,30 +41,35 @@ class ProjectStore {
     return this.editing[chatId] || null;
   }
 
-  applyEdit(chatId, text) {
-    const editState = this.editing[chatId];
+  applyEdit(chatId, value) {
+    const editState = this.isEditing(chatId);
     if (!editState) return null;
 
-    const project = this.getProject(chatId, editState.projectId);
+    const { projectId, field } = editState;
+    const project = this.getProject(chatId, projectId);
     if (!project) return null;
 
-    project[editState.field] = text;
-    delete this.editing[chatId];
+    project[field] = value;
+    this.editing[chatId] = null;
     return project;
   }
 
-  // --- Déploiement (enregistrement/mise à jour) ---
-  canDeploy(project) {
-    return project.name && project.symbol && project.description && project.wallet;
-  }
+  // --- Validation / Déploiement ---
+  validateProject(chatId, projectId) {
+    const project = this.getProject(chatId, projectId);
+    if (!project) return { valid: false, missing: [] };
 
-  getMissingFields(project) {
     const missing = [];
     if (!project.name) missing.push("Nom");
     if (!project.symbol) missing.push("Symbole");
     if (!project.description) missing.push("Description");
     if (!project.wallet) missing.push("Wallet");
-    return missing;
+
+    return {
+      valid: missing.length === 0,
+      missing,
+      project,
+    };
   }
 }
 
