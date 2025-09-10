@@ -1,51 +1,48 @@
+// projectStore.js
+
 class ProjectStore {
   constructor() {
-    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
-    this.editing = {}; // { chatId: { projectId, field } }
+    // Stockage en mémoire : { chatId: [ {id, name, symbol, description, wallet} ] }
+    this.projects = {};
   }
 
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
 
-  addProject(chatId, name) {
+  addProject(chatId, name = "Nouveau projet") {
     const project = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // ID unique basé sur le timestamp
       name,
-      symbol: "N/A",
-      description: "N/A",
-      wallet: "N/A",
+      symbol: "",
+      description: "",
+      wallet: ""
     };
-    if (!this.projects[chatId]) this.projects[chatId] = [];
+
+    if (!this.projects[chatId]) {
+      this.projects[chatId] = [];
+    }
+
     this.projects[chatId].push(project);
     return project;
   }
 
   getProject(chatId, projectId) {
-    return this.getProjects(chatId).find((p) => p.id === projectId);
+    const list = this.getProjects(chatId);
+    return list.find((p) => p.id === projectId);
   }
 
-  updateProject(chatId, projectId, fields) {
+  updateProject(chatId, projectId, field, value) {
     const project = this.getProject(chatId, projectId);
     if (project) {
-      Object.assign(project, fields);
+      project[field] = value;
     }
+    return project;
   }
 
   deleteProject(chatId, projectId) {
-    this.projects[chatId] = this.getProjects(chatId).filter((p) => p.id !== projectId);
-  }
-
-  setEditing(chatId, projectId, field) {
-    this.editing[chatId] = { projectId, field };
-  }
-
-  getEditing(chatId) {
-    return this.editing[chatId];
-  }
-
-  clearEditing(chatId) {
-    delete this.editing[chatId];
+    if (!this.projects[chatId]) return;
+    this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
   }
 }
 
