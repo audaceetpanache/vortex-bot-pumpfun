@@ -1,71 +1,40 @@
-// Simple in-memory store for projects
-class ProjectStore {
-  constructor() {
-    this.projects = {}; // { userId: [ { id, name, metadata, wallets } ] }
-  }
+// projectStore.js
 
-  // Generate a unique ID
-  generateId() {
-    return Math.random().toString(36).substring(2, 10);
-  }
+// On garde les projets en mémoire (pas de base de données pour l'instant)
+const projectsByUser = {};
 
-  // Get all projects for a user
-  getUserProjects(userId) {
-    if (!this.projects[userId]) {
-      this.projects[userId] = [];
-    }
-    return this.projects[userId];
+// Ajouter un projet
+function addProject(userId, name) {
+  if (!projectsByUser[userId]) {
+    projectsByUser[userId] = [];
   }
-
-  // Get a single project by id
-  getProject(userId, projectId) {
-    const projects = this.getUserProjects(userId);
-    return projects.find((p) => p.id === projectId);
-  }
-
-  // Create a new project
-  createProject(userId, name) {
-    const project = {
-      id: this.generateId(),
-      name,
-      metadata: {
-        name: null,
-        symbol: null,
-        description: null,
-        twitter: null,
-        telegram: null,
-        website: null,
-        image: null,
-      },
-      wallets: [],
-    };
-    this.getUserProjects(userId).push(project);
-    return project;
-  }
-
-  // Delete a project
-  deleteProject(userId, projectId) {
-    if (!this.projects[userId]) return;
-    this.projects[userId] = this.projects[userId].filter((p) => p.id !== projectId);
-  }
-
-  // Update project metadata
-  updateMetadata(userId, projectId, field, value) {
-    const project = this.getProject(userId, projectId);
-    if (project) {
-      project.metadata[field] = value;
-    }
-    return project;
-  }
-
-  // Add a wallet to project
-  addWallet(userId, projectId, wallet) {
-    const project = this.getProject(userId, projectId);
-    if (project) {
-      project.wallets.push(wallet);
-    }
-    return project;
-  }
+  const newProject = {
+    id: Date.now().toString(), // ID unique basé sur le timestamp
+    name,
+    metadata: null,
+    wallets: [],
+  };
+  projectsByUser[userId].push(newProject);
+  return newProject;
 }
 
-export const projectStore = new ProjectStore();
+// Récupérer tous les projets d’un utilisateur
+function getProjects(userId) {
+  return projectsByUser[userId] || [];
+}
+
+// Supprimer un projet
+function deleteProject(userId, projectId) {
+  if (!projectsByUser[userId]) return false;
+  projectsByUser[userId] = projectsByUser[userId].filter(
+    (proj) => proj.id !== projectId
+  );
+  return true;
+}
+
+// Exporter les fonctions
+export const projectStore = {
+  addProject,
+  getProjects,
+  deleteProject,
+};
