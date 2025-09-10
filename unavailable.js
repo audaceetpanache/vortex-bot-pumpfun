@@ -1,8 +1,8 @@
 export function getUnavailableMenu() {
   return {
-    text: "🚧 This feature is not supported yet, working on it",
+    text: "🚧 Cette fonctionnalité n’est pas encore disponible.",
     reply_markup: {
-      inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]]
-    }
+      inline_keyboard: [[{ text: "⬅️ Retour", callback_data: "home" }]],
+    },
   };
 }
