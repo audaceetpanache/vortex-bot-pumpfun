@@ -5,8 +5,8 @@ import {
   isProjectValid,
   getUserValidProject
 } from "./projectStore.js";
-import { handleMetadataCallback, getMetadataMenu } from "./metadata.js";
-import { handleWalletsCallback, getWalletsMenu } from "./wallets.js";
+import { getMetadataMenu, handleMetadataCallback } from "./metadata.js";
+import { getWalletsMenu, handleWalletsCallback } from "./wallets.js";
 import { getUnavailableMenu } from "./unavailable.js";
 
 
