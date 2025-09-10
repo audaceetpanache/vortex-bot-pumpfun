@@ -2,176 +2,160 @@ import express from "express";
 import bodyParser from "body-parser";
 import fetch from "node-fetch";
 import { projectStore } from "./projectStore.js";
-import { getUnavailableMenu } from "./unavailable.js";
-import { getLsnipeSettingsMenu } from "./lsnipesettings.js";
+import { getLsniperSettingsMenu } from "./lsnipesettings.js";
 
 const app = express();
 app.use(bodyParser.json());
 
 const TOKEN = process.env.BOT_TOKEN;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "secret";
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "SECRET";
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 
-// --- Utility: Send message
-async function sendMessage(chatId, text, reply_markup = null) {
+// --- Utils
+async function sendMessage(chatId, text, keyboard = null) {
+  const body = {
+    chat_id: chatId,
+    text,
+    parse_mode: "Markdown",
+  };
+  if (keyboard) {
+    body.reply_markup = keyboard;
+  }
   await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      reply_markup
-    })
+    body: JSON.stringify(body),
   });
 }
 
-// --- START COMMAND
-function getStartMenu(firstName) {
+function homeKeyboard(projects) {
+  const rows = projects.map((p) => [
+    { text: p.name, callback_data: `open_${p.id}` },
+  ]);
+  rows.push([{ text: "➕ Nouveau projet", callback_data: "new_project" }]);
+  rows.push([{ text: "⚙️ Paramètres", callback_data: "settings" }]);
+  return { inline_keyboard: rows };
+}
+
+function projectKeyboard(projectId) {
   return {
-    text:
-      "🌟 Welcome to VORTEX!\n" +
-      "🔥 Where Things Happen! 🔥\n\n" +
-      "Available Features:\n" +
-      "• Launch pump.fun tokens\n" +
-      "• Create or import multiple wallets\n" +
-      "• Auto-fund wallets via SOL disperser\n" +
-      "• Bundle up to 24 wallets\n" +
-      "• CTO pump.fun/raydium tokens\n" +
-      "• Delayed bundle on pump.fun\n" +
-      "• Advanced swap manager with intervals, sell all functions.\n" +
-      "• Anti-MEV protection\n\n" +
-      "Use /home to access all features\n" +
-      "Use /settings for configuration",
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "🏠 Home", callback_data: "home" },
-          { text: "⚙️ Settings", callback_data: "settings" }
-        ]
-      ]
-    }
+    inline_keyboard: [
+      [
+        { text: "✏️ Nom", callback_data: `edit_name_${projectId}` },
+        { text: "🔤 Symbole", callback_data: `edit_symbol_${projectId}` },
+      ],
+      [
+        { text: "📝 Description", callback_data: `edit_description_${projectId}` },
+        { text: "👛 Wallet", callback_data: `edit_wallet_${projectId}` },
+      ],
+      [{ text: "🗑 Supprimer", callback_data: `delete_${projectId}` }],
+      [{ text: "⬅️ Retour", callback_data: "home" }],
+    ],
   };
 }
 
-// --- HOME COMMAND
-function getHomeMenu(firstName) {
-  return {
-    text:
-      `Yo ${firstName}! Nice to see you again! 🔥\n` +
-      "What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸\n" +
-      "Hit the buttons below and let's make it happen:",
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: "📂 Your Projects", callback_data: "list_projects" }, { text: "🚀 Create new Project", callback_data: "create_project" }],
-        [{ text: "🚀 SPAM LAUNCH", callback_data: "unavailable" }],
-        [{ text: "🤑 BUMP BOT 🤑", callback_data: "unavailable" }],
-        [{ text: "💰 GET ALL SOL", callback_data: "unavailable" }],
-        [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable" }],
-        [{ text: "🔗 Referrals", callback_data: "unavailable" }, { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" }],
-        [{ text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }]
-      ]
-    }
-  };
-}
-
-// --- SETTINGS COMMAND
-function getSettingsMenu() {
-  return {
-    text:
-      "⚙️ Settings\n" +
-      "Current Settings:\n" +
-      "• Tip Amount: Disabled\n" +
-      "• Auto Tip: Enabled\n" +
-      "• Max Tip: 0.01 SOL\n" +
-      "• Priority Fee: 0.0005 SOL\n" +
-      "• Buy Slippage: 15%\n" +
-      "• Sell Slippage: 15%\n" +
-      "• Safe Settings: Enabled",
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "💰 TIP: ❌", callback_data: "unavailable" },
-          { text: "✅ AUTO TIP", callback_data: "unavailable" },
-          { text: "📊 MAX: 0.01 SOL", callback_data: "unavailable" }
-        ],
-        [
-          { text: "⚡️ PRIO: 0.0005 SOL", callback_data: "unavailable" },
-          { text: "📈 BUY SLIPPAGE: 15%", callback_data: "unavailable" },
-          { text: "📉 SELL SLIPPAGE: 15%", callback_data: "unavailable" }
-        ],
-        [
-          { text: "🔒 UI SECURITY: 🟢", callback_data: "unavailable" }
-        ],
-        [
-          { text: "⬅️ Back", callback_data: "home" },
-          { text: "🎯 LSNIPE Settings", callback_data: "lsnipesettings" }
-        ],
-        [
-          { text: "📦 LBS Settings", callback_data: "unavailable" }
-        ]
-      ]
-    }
-  };
-}
-
-// --- Handle Webhook
+// --- Webhook handler
 app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
-  const body = req.body;
-  console.log("Update received:", JSON.stringify(body, null, 2));
+  const update = req.body;
+  console.log("Update reçu :", JSON.stringify(update, null, 2));
 
-  if (body.message) {
-    const chatId = body.message.chat.id;
-    const text = body.message.text;
-    const firstName = body.message.chat.first_name || "friend";
+  if (update.message) {
+    const chatId = update.message.chat.id;
+    const text = update.message.text;
 
     if (text === "/start") {
-      const menu = getStartMenu(firstName);
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (text === "/home") {
-      const menu = getHomeMenu(firstName);
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (text === "/settings") {
-      const menu = getSettingsMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (text === "/lsnipesettings") {
-      const menu = getLsnipeSettingsMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
+      await sendMessage(
+        chatId,
+        "👋 Bienvenue sur *Vortex Bot* !\n\n" +
+          "Tu peux créer et gérer tes projets facilement.\n\n" +
+          "👉 Utilise /home pour voir et gérer tes projets\n" +
+          "👉 Utilise /lsnipesettings pour tes paramètres de snipe"
+      );
+    }
+
+    if (text === "/home") {
+      const projects = projectStore.getProjects(chatId);
+      await sendMessage(chatId, "🏠 Voici tes projets :", homeKeyboard(projects));
+    }
+
+    if (text === "/lsnipesettings") {
+      await sendMessage(
+        chatId,
+        "⚙️ Paramètres de snipe",
+        getLsniperSettingsMenu()
+      );
+    }
+
+    // gestion édition libre (quand user tape une réponse)
+    if (projectStore.isEditing(chatId)) {
+      const { field, projectId } = projectStore.getEditing(chatId);
+      projectStore.updateProject(chatId, projectId, field, text);
+      projectStore.clearEditing(chatId);
+      await sendMessage(
+        chatId,
+        `✅ ${field} mis à jour !`,
+        projectKeyboard(projectId)
+      );
     }
   }
 
-  if (body.callback_query) {
-    const chatId = body.callback_query.message.chat.id;
-    const data = body.callback_query.data;
-    const firstName = body.callback_query.message.chat.first_name || "friend";
+  if (update.callback_query) {
+    const chatId = update.callback_query.message.chat.id;
+    const data = update.callback_query.data;
 
     if (data === "home") {
-      const menu = getHomeMenu(firstName);
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "settings") {
-      const menu = getSettingsMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "lsnipesettings") {
-      const menu = getLsnipeSettingsMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "unavailable") {
-      const menu = getUnavailableMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
+      const projects = projectStore.getProjects(chatId);
+      await sendMessage(chatId, "🏠 Retour à l’accueil :", homeKeyboard(projects));
+    }
+
+    if (data === "new_project") {
+      const newProj = projectStore.addProject(chatId, "Mon super projet");
+      await sendMessage(chatId, "✨ Nouveau projet créé :", projectKeyboard(newProj.id));
+    }
+
+    if (data.startsWith("open_")) {
+      const projectId = data.split("_")[1];
+      const proj = projectStore.getProject(chatId, projectId);
+      if (proj) {
+        await sendMessage(
+          chatId,
+          `📂 *${proj.name}*\n\n` +
+            `💠 Symbole: ${proj.symbol}\n` +
+            `📝 Description: ${proj.description}\n` +
+            `👛 Wallet: ${proj.wallet}`,
+          projectKeyboard(proj.id)
+        );
+      }
+    }
+
+    if (data.startsWith("delete_")) {
+      const projectId = data.split("_")[1];
+      projectStore.deleteProject(chatId, projectId);
+      const projects = projectStore.getProjects(chatId);
+      await sendMessage(chatId, "🗑 Projet supprimé.", homeKeyboard(projects));
+    }
+
+    if (data.startsWith("edit_")) {
+      const [_, field, projectId] = data.split("_");
+      projectStore.setEditing(chatId, projectId, field);
+      await sendMessage(chatId, `✏️ Envoie le nouveau *${field}* :`);
     }
   }
 
   res.sendStatus(200);
 });
 
-// --- Set Webhook automatically
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, async () => {
-  console.log(`✅ Serveur en ligne sur port ${PORT}`);
-  try {
-    const url = `https://vortex-bot-pumpfun.onrender.com/webhook/${WEBHOOK_SECRET}`;
-    const res = await fetch(`${TELEGRAM_API}/setWebhook?url=${url}`);
-    const data = await res.json();
-    console.log("✅ Webhook configuré :", data);
-  } catch (err) {
-    console.error("❌ Erreur Webhook :", err);
-  }
+// --- Start server
+app.listen(10000, async () => {
+  console.log("✅ Serveur en ligne sur port 10000");
+
+  // set webhook automatiquement
+  const url = `https://vortex-bot-pumpfun.onrender.com/webhook/${WEBHOOK_SECRET}`;
+  const resp = await fetch(`${TELEGRAM_API}/setWebhook`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  const data = await resp.json();
+  console.log("✅ Webhook configuré :", data);
 });
