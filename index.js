@@ -70,17 +70,7 @@ function getHomeMenu() {
 
 function getSettingsMenu() {
   return {
-    text: "⚙️ Settings
-
-Current Settings:
-• Tip Amount: Disabled
-• Auto Tip: Enabled
-• Max Tip: 0.01 SOL
-• Priority Fee: 0.0005 SOL
-• Buy Slippage: 15%
-• Sell Slippage: 15%
-• Safe Settings: Enabled",
-    reply_markup: {
+    text: '⚙️ Settings à compléter',
       inline_keyboard: [
         [{ text: "💰 TIP: ❌", callback_data: "unavailable_settings" }],[{ text: "✅ AUTO TIP", callback_data: "unavailable_settings" }],[{ text: "📊 MAX: 0.01 SOL", callback_data: "unavailable_settings" }],
         [{ text: "⚡️ PRIO: 0.0005 SOL", callback_data: "unavailable_settings" }],[{ text: "📈 BUY: 15%", callback_data: "unavailable_settings" }],[{ text: "📉 SELL: 15%", callback_data: "unavailable_settings" }],
