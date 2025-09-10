@@ -51,27 +51,17 @@ function getHomeMenu() {
   return {
     text: `👋 Welcome back!
 
-What’s next? Pick an option below:
-
-• 📂 My Projects  
-• 🚀 Create a New Project  
-• 🚀 Spam Launch  
-• 🤖 Bump Bot  
-• 💰 Withdraw All SOL  
-• 🎁 Claim Dev Rewards  
-• 🔗 Referrals  
-• ❓ Help  
-• 👥 Discord`,
+What’s next? Pick an option below:`,
     reply_markup: {
       inline_keyboard: [
         [
-          { text: "📂 My Projects", callback_data: "my_projects" },
+          { text: "📂 Your Projects", callback_data: "my_projects" },
           { text: "🚀 Create New Project", callback_data: "create_project" }
         ],
-        [{ text: "🚀 Spam Launch", callback_data: "unavailable_home" }],
-        [{ text: "🤖 Bump Bot", callback_data: "unavailable_home" }],
-        [{ text: "💰 Withdraw All SOL", callback_data: "unavailable_home" }],
-        [{ text: "🎁 Claim Dev Rewards", callback_data: "unavailable_home" }],
+        [{ text: "🚀 SPAM LAUNCH", callback_data: "unavailable_home" }],
+        [{ text: "🤑 BUMP BOT 🤑", callback_data: "unavailable_home" }],
+        [{ text: "💰 GET All SOL", callback_data: "unavailable_home" }],
+        [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable_home" }],
         [
           { text: "🔗 Referrals", callback_data: "unavailable_home" },
           { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" },
