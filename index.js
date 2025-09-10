@@ -49,9 +49,11 @@ Available Features:
 
 function getHomeMenu() {
   return {
-    text: `👋 Welcome back!
-
-What’s next? Pick an option below:`,
+    text: `Yo! Nice to see you again! 🔥
+    
+    What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+    
+    Hit the buttons below and let's make it happen:`,
     reply_markup: {
       inline_keyboard: [
         [
@@ -63,7 +65,6 @@ What’s next? Pick an option below:`,
         [{ text: "💰 GET All SOL", callback_data: "unavailable_home" }],
         [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable_home" }],
         [
-          { text: "🔗 Referrals", callback_data: "unavailable_home" },
           { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" },
           { text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }
         ],
@@ -72,6 +73,7 @@ What’s next? Pick an option below:`,
     }
   };
 }
+
 
 
 function getSettingsMenu() {
