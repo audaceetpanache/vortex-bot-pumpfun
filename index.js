@@ -71,12 +71,18 @@ function getHomeMenu() {
 function getSettingsMenu() {
   return {
     text: '⚙️ Settings à compléter',
+    reply_markup: {
       inline_keyboard: [
-        [{ text: "💰 TIP: ❌", callback_data: "unavailable_settings" }],[{ text: "✅ AUTO TIP", callback_data: "unavailable_settings" }],[{ text: "📊 MAX: 0.01 SOL", callback_data: "unavailable_settings" }],
-        [{ text: "⚡️ PRIO: 0.0005 SOL", callback_data: "unavailable_settings" }],[{ text: "📈 BUY: 15%", callback_data: "unavailable_settings" }],[{ text: "📉 SELL: 15%", callback_data: "unavailable_settings" }],
+        [{ text: "💰 TIP: ❌", callback_data: "unavailable_settings" }],
+        [{ text: "✅ AUTO TIP", callback_data: "unavailable_settings" }],
+        [{ text: "📊 MAX: 0.01 SOL", callback_data: "unavailable_settings" }],
+        [{ text: "⚡️ PRIO: 0.0005 SOL", callback_data: "unavailable_settings" }],
+        [{ text: "📈 BUY: 15%", callback_data: "unavailable_settings" }],
+        [{ text: "📉 SELL: 15%", callback_data: "unavailable_settings" }],
         [{ text: "🔓 UI SECURITY 🟢", callback_data: "unavailable_settings" }],
+        [{ text: "🎯 LSNIPE Settings", callback_data: "unavailable_settings" }],
+        [{ text: "📦 LBS Settings", callback_data: "unavailable_settings" }],
         [{ text: "⬅️ Back", callback_data: "back_start" }]
-        [{ text: "🎯 LSNIPE Settings", callback_data: "unavailable_settings" }],[{ text: "📦 LBS Settings", callback_data: "unavailable_settings" }],
       ]
     }
   };
