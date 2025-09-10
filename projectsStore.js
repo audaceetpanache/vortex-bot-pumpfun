@@ -1,35 +1,68 @@
-import fs from "fs";
+// projectStore.js
+import { randomUUID } from "crypto";
 
-export let projectsStore = {};
+class ProjectStore {
+  constructor() {
+    this.projects = {}; // { userId: [ { id, name, metadata, wallets, validated } ] }
+  }
 
-const FILE = "./db.json";
+  createProject(userId) {
+    if (!this.projects[userId]) {
+      this.projects[userId] = [];
+    }
+    const project = {
+      id: randomUUID().slice(0, 8),
+      name: `Project ${this.projects[userId].length + 1}`,
+      metadata: {
+        name: null,
+        symbol: null,
+        description: null,
+        twitter: null,
+        telegram: null,
+        website: null,
+        image: null,
+        deployed: false,
+      },
+      wallets: [],
+      validated: false,
+    };
+    this.projects[userId].push(project);
+    return project;
+  }
 
-if (fs.existsSync(FILE)) {
-  projectsStore = JSON.parse(fs.readFileSync(FILE));
+  getProjects(userId) {
+    return this.projects[userId] || [];
+  }
+
+  getProject(userId, projectId) {
+    return (this.projects[userId] || []).find((p) => p.id === projectId);
+  }
+
+  updateMetadata(userId, projectId, key, value) {
+    const project = this.getProject(userId, projectId);
+    if (project) {
+      project.metadata[key] = value;
+    }
+  }
+
+  addWallet(userId, projectId, wallet) {
+    const project = this.getProject(userId, projectId);
+    if (project) {
+      project.wallets.push(wallet);
+    }
+  }
+
+  validateProject(userId, projectId) {
+    const project = this.getProject(userId, projectId);
+    if (!project) return false;
+
+    const m = project.metadata;
+    const metadataComplete = m.name && m.symbol && m.description;
+    const walletsComplete = project.wallets.length > 0;
+
+    project.validated = metadataComplete && walletsComplete;
+    return project.validated;
+  }
 }
 
-export function saveProjects() {
-  fs.writeFileSync(FILE, JSON.stringify(projectsStore, null, 2));
-}
-
-export function generateId() {
-  return Math.random().toString(36).substring(2, 8);
-}
-
-// ✅ Check if a project is fully valid
-export function isProjectValid(project) {
-  return (
-    project.metadata &&
-    project.metadata.deployed &&
-    project.metadata.name &&
-    project.metadata.symbol &&
-    project.metadata.description &&
-    project.wallets &&
-    project.wallets.length > 0
-  );
-}
-
-export function getUserValidProject(userId) {
-  const projects = projectsStore[userId] || [];
-  return projects.find((p) => isProjectValid(p));
-}
+export const projectStore = new ProjectStore();
