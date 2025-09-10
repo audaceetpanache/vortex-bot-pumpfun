@@ -2,8 +2,10 @@
 
 class ProjectStore {
   constructor() {
-    // Stockage en mémoire : { chatId: [ {id, name, symbol, description, wallet} ] }
+    // { chatId: [ {id, name, symbol, description, wallet} ] }
     this.projects = {};
+    // { chatId: { projectId, field } }
+    this.editing = {};
   }
 
   getProjects(chatId) {
@@ -12,7 +14,7 @@ class ProjectStore {
 
   addProject(chatId, name = "Nouveau projet") {
     const project = {
-      id: Date.now().toString(), // ID unique basé sur le timestamp
+      id: Date.now().toString(),
       name,
       symbol: "",
       description: "",
@@ -43,6 +45,19 @@ class ProjectStore {
   deleteProject(chatId, projectId) {
     if (!this.projects[chatId]) return;
     this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
+  }
+
+  // --- Gestion de l'édition (héritée de ton ancien code)
+  startEditing(chatId, projectId, field) {
+    this.editing[chatId] = { projectId, field };
+  }
+
+  isEditing(chatId) {
+    return this.editing[chatId] || null;
+  }
+
+  stopEditing(chatId) {
+    delete this.editing[chatId];
   }
 }
 
