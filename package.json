@@ -1,13 +1,15 @@
 {
   "name": "vortex-bot-pumpfun",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Telegram bot for managing projects (Node.js, Express, Render)",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "body-parser": "^1.20.2",
     "node-fetch": "^3.3.2"
   }
 }
