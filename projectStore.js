@@ -1,52 +1,51 @@
 class ProjectStore {
   constructor() {
-    this.projects = {};
-    this.pendingEdits = {};
+    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
+    this.editing = {}; // { chatId: { projectId, field } }
   }
 
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
 
-  getProject(chatId, projectId) {
-    return (this.projects[chatId] || []).find((p) => p.id === projectId);
-  }
-
   addProject(chatId, name) {
-    const newProject = {
+    const project = {
       id: Date.now().toString(),
       name,
-      symbol: "SYM",
-      description: "Nouvelle description",
-      wallet: "0x0000000000000000000000000000000000000000",
+      symbol: "N/A",
+      description: "N/A",
+      wallet: "N/A",
     };
     if (!this.projects[chatId]) this.projects[chatId] = [];
-    this.projects[chatId].push(newProject);
-    return newProject;
+    this.projects[chatId].push(project);
+    return project;
+  }
+
+  getProject(chatId, projectId) {
+    return this.getProjects(chatId).find((p) => p.id === projectId);
+  }
+
+  updateProject(chatId, projectId, fields) {
+    const project = this.getProject(chatId, projectId);
+    if (project) {
+      Object.assign(project, fields);
+    }
   }
 
   deleteProject(chatId, projectId) {
-    if (!this.projects[chatId]) return;
-    this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
+    this.projects[chatId] = this.getProjects(chatId).filter((p) => p.id !== projectId);
   }
 
-  setPendingEdit(chatId, projectId, field) {
-    this.pendingEdits[chatId] = { projectId, field };
+  setEditing(chatId, projectId, field) {
+    this.editing[chatId] = { projectId, field };
   }
 
-  getPendingEdit(chatId) {
-    return this.pendingEdits[chatId];
+  getEditing(chatId) {
+    return this.editing[chatId];
   }
 
-  clearPendingEdit(chatId) {
-    delete this.pendingEdits[chatId];
-  }
-
-  updateProjectField(chatId, projectId, field, value) {
-    const project = this.getProject(chatId, projectId);
-    if (project) {
-      project[field] = value;
-    }
+  clearEditing(chatId) {
+    delete this.editing[chatId];
   }
 }
 
