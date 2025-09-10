@@ -1,11 +1,11 @@
-import { Telegraf } from "telegraf";
 import express from "express";
 import fetch from "node-fetch";
-
-import { projects } from "./projectStore.js";
+import { getHomeMenu } from "./home.js";
+import { getSettingsMenu } from "./settings.js";
+import { getUnavailableMenu } from "./unavailable.js";
+import { projectStore } from "./projectStore.js";
 import { getMetadataMenu } from "./metadata.js";
 import { getWalletsMenu } from "./wallets.js";
-import { getUnavailableMenu } from "./unavailable.js";
 
 const app = express();
 app.use(bodyParser.json());
