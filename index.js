@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import fetch from "node-fetch";
-import projectStore from "./projectStore.js";
+import { projectStore } from "./projectStore.js";
 
 const app = express();
 app.use(bodyParser.json());
