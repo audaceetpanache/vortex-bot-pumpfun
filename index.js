@@ -1,8 +1,8 @@
+import { Telegraf } from "telegraf";
 import express from "express";
-import bodyParser from "body-parser";
 import fetch from "node-fetch";
 
-import { projectStore } from "./projectStore.js";
+import { projects } from "./projectStore.js";
 import { getMetadataMenu } from "./metadata.js";
 import { getWalletsMenu } from "./wallets.js";
 import { getUnavailableMenu } from "./unavailable.js";
