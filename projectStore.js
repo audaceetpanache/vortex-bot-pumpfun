@@ -1,42 +1,52 @@
 class ProjectStore {
   constructor() {
-    this.projects = {}; // { chatId: [ { id, name, symbol, description, wallet } ] }
+    this.projects = {}; // { chatId: [ {id, name, symbol, description, wallet} ] }
+    this.editState = {}; // { chatId: { projectId, field } }
+  }
+
+  addProject(chatId, name, symbol, description, wallet) {
+    if (!this.projects[chatId]) this.projects[chatId] = [];
+    const newProj = {
+      id: Date.now().toString(),
+      name,
+      symbol,
+      description,
+      wallet
+    };
+    this.projects[chatId].push(newProj);
+    return newProj;
   }
 
   getProjects(chatId) {
-    if (!this.projects[chatId]) this.projects[chatId] = [];
-    return this.projects[chatId];
+    return this.projects[chatId] || [];
   }
 
   getProject(chatId, projectId) {
-    const list = this.getProjects(chatId);
-    return list.find((p) => p.id === projectId);
-  }
-
-  addProject(chatId, name) {
-    const list = this.getProjects(chatId);
-    const newId = list.length > 0 ? list[list.length - 1].id + 1 : 1;
-    const newProject = {
-      id: newId,
-      name,
-      symbol: "",
-      description: "",
-      wallet: "",
-    };
-    list.push(newProject);
-    return newProject;
+    return this.getProjects(chatId).find(p => p.id === projectId);
   }
 
   deleteProject(chatId, projectId) {
-    this.projects[chatId] = this.getProjects(chatId).filter((p) => p.id !== projectId);
+    this.projects[chatId] = this.getProjects(chatId).filter(p => p.id !== projectId);
   }
 
-  updateProject(chatId, projectId, updates) {
-    const project = this.getProject(chatId, projectId);
-    if (project) {
-      Object.assign(project, updates);
+  updateProject(chatId, projectId, field, value) {
+    const proj = this.getProject(chatId, projectId);
+    if (proj) {
+      proj[field] = value;
     }
-    return project;
+    return proj;
+  }
+
+  setEditState(chatId, projectId, field) {
+    this.editState[chatId] = { projectId, field };
+  }
+
+  getEditState(chatId) {
+    return this.editState[chatId] || null;
+  }
+
+  clearEditState(chatId) {
+    delete this.editState[chatId];
   }
 }
 
