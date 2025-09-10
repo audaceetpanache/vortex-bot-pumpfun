@@ -62,7 +62,7 @@ Hit the buttons below and let's make it happen:`,
         ],
         [{ text: "🚀 SPAM LAUNCH", callback_data: "unavailable_home" }],
         [{ text: "🤑 BUMP BOT 🤑", callback_data: "unavailable_home" }],
-        [{ text: "💰 GET All SOL", callback_data: "unavailable_home" }],
+        [{ text: "💰 GET ALL SOL", callback_data: "unavailable_home" }],
         [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable_home" }],
         [
           { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" },
