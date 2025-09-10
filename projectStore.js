@@ -1,11 +1,10 @@
-import { randomUUID } from "crypto";
-
 class ProjectStore {
   constructor() {
     this.projects = {}; // { chatId: [ {id, name, symbol, description, wallet} ] }
-    this.editing = {}; // { chatId: { projectId, field } }
+    this.pendingEdits = {}; // { chatId: { projectId, field } }
   }
 
+  // ------------------ CRUD ------------------
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
@@ -14,17 +13,25 @@ class ProjectStore {
     return this.getProjects(chatId).find((p) => p.id === projectId);
   }
 
-  addProject(chatId, name) {
-    const proj = {
-      id: randomUUID(),
-      name,
-      symbol: "N/A",
-      description: "N/A",
-      wallet: "N/A",
-    };
+  addProject(chatId, name, symbol, description, wallet) {
     if (!this.projects[chatId]) this.projects[chatId] = [];
-    this.projects[chatId].push(proj);
-    return proj;
+    const newProj = {
+      id: String(Date.now()),
+      name,
+      symbol,
+      description,
+      wallet,
+    };
+    this.projects[chatId].push(newProj);
+    return newProj;
+  }
+
+  updateProject(chatId, projectId, field, value) {
+    const project = this.getProject(chatId, projectId);
+    if (project && field in project) {
+      project[field] = value;
+    }
+    return project;
   }
 
   deleteProject(chatId, projectId) {
@@ -32,27 +39,17 @@ class ProjectStore {
     this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
   }
 
-  updateProject(chatId, projectId, field, value) {
-    const proj = this.getProject(chatId, projectId);
-    if (proj) {
-      proj[field] = value;
-    }
+  // ------------------ EDIT PENDING ------------------
+  setPendingEdit(chatId, projectId, field) {
+    this.pendingEdits[chatId] = { projectId, field };
   }
 
-  setEditing(chatId, projectId, field) {
-    this.editing[chatId] = { projectId, field };
+  getPendingEdit(chatId) {
+    return this.pendingEdits[chatId];
   }
 
-  isEditing(chatId) {
-    return !!this.editing[chatId];
-  }
-
-  getEditing(chatId) {
-    return this.editing[chatId];
-  }
-
-  clearEditing(chatId) {
-    delete this.editing[chatId];
+  clearPendingEdit(chatId) {
+    delete this.pendingEdits[chatId];
   }
 }
 
