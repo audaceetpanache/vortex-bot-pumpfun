@@ -1,5 +1,3 @@
-import { getUnavailableMenu } from "./unavailable.js";
-
 export function getLSnipeSettingsMenu() {
   return {
     text: "⚙️ LSnip Settings\n\nThese features are under construction 🚧",
