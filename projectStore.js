@@ -1,37 +1,28 @@
 class ProjectStore {
   constructor() {
-    this.projects = {}; // { chatId: [ {id, name, symbol, description, wallet} ] }
-    this.pendingEdits = {}; // { chatId: { projectId, field } }
+    this.projects = {};
+    this.pendingEdits = {};
   }
 
-  // ------------------ CRUD ------------------
   getProjects(chatId) {
     return this.projects[chatId] || [];
   }
 
   getProject(chatId, projectId) {
-    return this.getProjects(chatId).find((p) => p.id === projectId);
+    return (this.projects[chatId] || []).find((p) => p.id === projectId);
   }
 
-  addProject(chatId, name, symbol, description, wallet) {
-    if (!this.projects[chatId]) this.projects[chatId] = [];
-    const newProj = {
-      id: String(Date.now()),
+  addProject(chatId, name) {
+    const newProject = {
+      id: Date.now().toString(),
       name,
-      symbol,
-      description,
-      wallet,
+      symbol: "SYM",
+      description: "Nouvelle description",
+      wallet: "0x0000000000000000000000000000000000000000",
     };
-    this.projects[chatId].push(newProj);
-    return newProj;
-  }
-
-  updateProject(chatId, projectId, field, value) {
-    const project = this.getProject(chatId, projectId);
-    if (project && field in project) {
-      project[field] = value;
-    }
-    return project;
+    if (!this.projects[chatId]) this.projects[chatId] = [];
+    this.projects[chatId].push(newProject);
+    return newProject;
   }
 
   deleteProject(chatId, projectId) {
@@ -39,7 +30,6 @@ class ProjectStore {
     this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
   }
 
-  // ------------------ EDIT PENDING ------------------
   setPendingEdit(chatId, projectId, field) {
     this.pendingEdits[chatId] = { projectId, field };
   }
@@ -50,6 +40,13 @@ class ProjectStore {
 
   clearPendingEdit(chatId) {
     delete this.pendingEdits[chatId];
+  }
+
+  updateProjectField(chatId, projectId, field, value) {
+    const project = this.getProject(chatId, projectId);
+    if (project) {
+      project[field] = value;
+    }
   }
 }
 
