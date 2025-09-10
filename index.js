@@ -23,7 +23,19 @@ async function sendMessage(chatId, text, reply_markup) {
 // --- Menus ---
 function getStartMenu() {
   return {
-    text: "👋 Bienvenue sur le bot Pumpfun !",
+    text: "🌟 Welcome to VORTEX!
+
+🔥 Where Things Happen! 🔥
+
+Available Features:
+• Launch pump.fun tokens
+• Create or import multiple wallets
+• Auto-fund wallets via SOL disperser
+• Bundle up to 24 wallets
+• CTO pump.fun/raydium tokens
+• Delayed bundle on pump.fun
+• Advanced swap manager with intervals, sell all functions.
+• Anti-MEV protection",
     reply_markup: {
       inline_keyboard: [
         [{ text: "🏠 Home", callback_data: "home" }],
