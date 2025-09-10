@@ -7,127 +7,138 @@ const app = express();
 app.use(bodyParser.json());
 
 const TOKEN = process.env.BOT_TOKEN;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "SECRET";
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "secret";
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
-const WEBHOOK_URL = `https://vortex-bot-pumpfun.onrender.com/webhook/${WEBHOOK_SECRET}`;
 
-// --- Fonction utilitaire pour envoyer un message
-async function sendMessage(chatId, text, reply_markup = null) {
-  const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
+// --- Utility
+async function sendMessage(chatId, text, keyboard = null) {
+  await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: chatId,
       text,
-      reply_markup,
+      reply_markup: keyboard || undefined,
     }),
   });
-  return res.json();
 }
 
-// --- Webhook handler
+// --- Start & Home
+function getStartMenu() {
+  return {
+    inline_keyboard: [
+      [{ text: "🏠 Home", callback_data: "home" }],
+      [{ text: "⚙️ Settings", callback_data: "settings" }],
+    ],
+  };
+}
+
+function getHomeMenu(userId) {
+  const projects = projectStore.getProjects(userId);
+  return {
+    inline_keyboard: [
+      [{ text: "📂 Your Projects", callback_data: "list_projects" }],
+      [{ text: "🚀 Create new Project", callback_data: "create_project" }],
+      [
+        {
+          text: "🤑 BUMP BOT 🤑",
+          callback_data: "bump_bot",
+        },
+      ],
+      [
+        {
+          text: "🎁 CLAIM DEV REWARDS",
+          callback_data: "rewards",
+        },
+      ],
+    ],
+  };
+}
+
+// --- Handlers
 app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
-  console.log("Update reçu :", JSON.stringify(req.body, null, 2));
-
   const update = req.body;
-
   if (update.message) {
     const chatId = update.message.chat.id;
-    const text = update.message.text;
-
-    if (text === "/start") {
-      await sendMessage(chatId, "🌟 Welcome to VORTEX!\n🔥 Where Things Happen! 🔥", {
-        inline_keyboard: [
-          [{ text: "🏠 Home", callback_data: "home" }],
-          [{ text: "⚙️ Settings", callback_data: "settings" }],
-        ],
-      });
-    }
-
-    if (text === "/home") {
-      await sendHomeMenu(chatId);
+    if (update.message.text === "/start") {
+      await sendMessage(
+        chatId,
+        "🌟 Welcome to VORTEX!\n🔥 Where Things Happen! 🔥",
+        getStartMenu()
+      );
     }
   }
 
   if (update.callback_query) {
     const chatId = update.callback_query.message.chat.id;
+    const userId = String(chatId);
     const data = update.callback_query.data;
 
     if (data === "home") {
-      await sendHomeMenu(chatId);
+      await sendMessage(chatId, "🏠 Home Menu", getHomeMenu(userId));
     }
 
     if (data === "create_project") {
-      const newProj = projectStore.addProject(chatId, "Mon super projet");
-      await sendMessage(chatId, `✅ Projet créé : ${newProj.name}`);
-      await sendHomeMenu(chatId);
+      const project = projectStore.addProject(userId, "Untitled Project");
+      await sendMessage(
+        chatId,
+        `✅ Project created: ${project.name} (ID: ${project.id})`
+      );
     }
 
-    if (data.startsWith("open_project_")) {
-      const projectId = data.replace("open_project_", "");
-      const projects = projectStore.getProjects(chatId);
-      const project = projects.find((p) => p.id === projectId);
-      if (project) {
-        await sendMessage(chatId, `📂 Projet : ${project.name}`, {
-          inline_keyboard: [
-            [{ text: "🗑️ Supprimer", callback_data: `delete_project_${project.id}` }],
-            [{ text: "⬅️ Back", callback_data: "home" }],
-          ],
-        });
+    if (data === "list_projects") {
+      const projects = projectStore.getProjects(userId);
+      if (!projects.length) {
+        await sendMessage(chatId, "❌ You have no projects yet.");
       } else {
-        await sendMessage(chatId, "❌ Projet introuvable.");
+        const keyboard = {
+          inline_keyboard: projects.map((p) => [
+            { text: p.name, callback_data: `open_${p.id}` },
+            { text: "🗑️ Delete", callback_data: `delete_${p.id}` },
+          ]),
+        };
+        await sendMessage(chatId, "📂 Your Projects:", keyboard);
       }
     }
 
-    if (data.startsWith("delete_project_")) {
-      const projectId = data.replace("delete_project_", "");
-      const ok = projectStore.deleteProject(chatId, projectId);
-      if (ok) {
-        await sendMessage(chatId, "🗑️ Projet supprimé.");
+    if (data.startsWith("delete_")) {
+      const projectId = data.split("_")[1];
+      projectStore.deleteProject(userId, projectId);
+      await sendMessage(chatId, "🗑️ Project deleted.");
+    }
+
+    if (data.startsWith("open_")) {
+      const projectId = data.split("_")[1];
+      const proj = projectStore.getProject(userId, projectId);
+      if (!proj) {
+        await sendMessage(chatId, "❌ Project not found.");
       } else {
-        await sendMessage(chatId, "❌ Impossible de supprimer ce projet.");
+        await sendMessage(
+          chatId,
+          `📂 Project: ${proj.name}\nSymbol: ${proj.symbol || "❌"}\nDescription: ${
+            proj.description || "❌"
+          }\nWallets: ${proj.wallets.length}\nValidated: ${
+            proj.validated ? "✅" : "❌"
+          }`
+        );
       }
-      await sendHomeMenu(chatId);
     }
   }
 
   res.sendStatus(200);
 });
 
-// --- Menu principal HOME
-async function sendHomeMenu(chatId) {
-  const projects = projectStore.getProjects(chatId);
+// --- Server
+app.listen(10000, async () => {
+  console.log("✅ Serveur en ligne sur port 10000");
 
-  const keyboard = [];
-
-  if (projects.length > 0) {
-    projects.forEach((proj) => {
-      keyboard.push([{ text: `📂 ${proj.name}`, callback_data: `open_project_${proj.id}` }]);
-    });
-  }
-
-  keyboard.push([{ text: "🚀 Create new Project", callback_data: "create_project" }]);
-
-  await sendMessage(chatId, "🏠 Home\nVoici vos projets :", {
-    inline_keyboard: keyboard,
+  // auto set webhook
+  const url = `${process.env.RENDER_EXTERNAL_URL}/webhook/${WEBHOOK_SECRET}`;
+  const resp = await fetch(`${TELEGRAM_API}/setWebhook`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
   });
-}
-
-// --- Démarrage serveur
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, async () => {
-  console.log(`✅ Serveur en ligne sur port ${PORT}`);
-
-  // Auto-config du webhook
-  try {
-    const res = await fetch(`${TELEGRAM_API}/setWebhook`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: WEBHOOK_URL }),
-    });
-    const data = await res.json();
-    console.log("✅ Webhook configuré :", data);
-  } catch (err) {
-    console.error("❌ Erreur config webhook :", err);
-  }
+  const data = await resp.json();
+  console.log("✅ Webhook configuré :", data);
 });
