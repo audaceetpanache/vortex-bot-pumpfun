@@ -77,14 +77,15 @@ Hit the buttons below and let's make it happen:`,
 function getSettingsMenu() {
   return {
     text: `⚙️ Settings
+
 Current Settings:
-Tip Amount: Disabled
-Auto Tip: Enabled
-Max Tip: 0.01 SOL
-Priority Fee: 0.0005 SOL
-Buy Slippage: 15%
-Sell Slippage: 15%
-Safe Settings: Enabled`,
+• Tip Amount: Disabled
+• Auto Tip: Enabled
+• Max Tip: 0.01 SOL
+• Priority Fee: 0.0005 SOL
+• Buy Slippage: 15%
+• Sell Slippage: 15%
+• Safe Settings: Enabled`,
     reply_markup: {
       inline_keyboard: [
         [
@@ -98,8 +99,10 @@ Safe Settings: Enabled`,
           { text: "📉 SELL: 15%", callback_data: "unavailable_settings" }
         ],
         [{ text: "🔓 UI SECURITY 🟢", callback_data: "unavailable_settings" }],
-        [{ text: "🎯 LSNIPE Settings", callback_data: "unavailable_settings" }],
-        [{ text: "📦 LBS Settings", callback_data: "unavailable_settings" }],
+        [
+          { text: "🎯 LSNIPE Settings", callback_data: "unavailable_settings" },
+          { text: "📦 LBS Settings", callback_data: "unavailable_settings" }
+        ],
         [{ text: "⬅️ Back", callback_data: "back_start" }]
       ]
     }
