@@ -8,18 +8,16 @@ app.use(express.json());
 
 const TOKEN = process.env.BOT_TOKEN;
 if (!TOKEN) {
-  console.error("❌ BOT_TOKEN is required in environment variables.");
+  console.error("❌ BOT_TOKEN missing in environment variables. Stopping.");
   process.exit(1);
 }
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 
-// Accept both /webhook and /webhook/<secret> (if set)
 const webhookPaths = WEBHOOK_SECRET ? ["/webhook", `/webhook/${WEBHOOK_SECRET}`] : ["/webhook"];
+const userStates = {}; // track user flows: { [userId]: { step: string, projectId?: string, field?: string } }
 
-const userStates = {}; // { userId: { step: "...", projectId?: "..." } }
-
-// ------ Helpers to call Telegram API ------
+// ---------- Helpers to call Telegram ----------
 async function sendMessage(chatId, text, options = {}) {
   const body = {
     chat_id: chatId,
@@ -49,7 +47,7 @@ async function editMessage(chatId, messageId, text, options = {}) {
   });
 }
 
-// ------ Menus ------
+// ---------- Menus ----------
 function startMenu() {
   return {
     text: `🌟 Welcome to VORTEX!\n🔥 Where Things Happen! 🔥
@@ -87,18 +85,14 @@ function settingsMenu() {
   return {
     text: `⚙️ Settings
 (Currently placeholder)`,
-    reply_markup: {
-      inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]]
-    }
+    reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]] }
   };
 }
 
 function unavailableMenu() {
   return {
     text: "🚧 This feature is not supported yet, working on it",
-    reply_markup: {
-      inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]]
-    }
+    reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]] }
   };
 }
 
@@ -114,10 +108,12 @@ function projectListButtons(userId) {
 }
 
 function projectDetailMenu(project) {
+  const md = project.metadata || {};
+  const deployed = project.metadata && project.metadata.deployed ? "✅" : "❌";
   return {
     text: `🎯 Project (${project.id})
 Name: ${project.name || "—"}
-(For now token metadata & wallets are placeholders)`,
+Metadata deployed: ${deployed}`,
     reply_markup: {
       inline_keyboard: [
         [{ text: "📝 Token Metadata", callback_data: `metadata:${project.id}` }],
@@ -129,33 +125,58 @@ Name: ${project.name || "—"}
   };
 }
 
-// ------ Webhook handler (accept both paths) ------
-for (const p of webhookPaths) {
-  app.post(p, async (req, res) => {
+function metadataMenu(project) {
+  const md = project.metadata || {};
+  const deployed = md.deployed ? "✅ Metadata deployed" : "❌ Metadata not yet deployed";
+  return {
+    text: `🎯 Project (${project.id}) Metadata
+Status: ${deployed}
+Select a field to edit:`,
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: `Name: ${md.name || "❌"}`, callback_data: `meta_edit:${project.id}:name` }, { text: `Symbol: ${md.symbol || "❌"}`, callback_data: `meta_edit:${project.id}:symbol` }],
+        [{ text: `Description: ${md.description ? "✓" : "❌"}`, callback_data: `meta_edit:${project.id}:description` }],
+        [{ text: `Twitter: ${md.twitter || "—"}`, callback_data: `meta_edit:${project.id}:twitter` }, { text: `Telegram: ${md.telegram || "—"}`, callback_data: `meta_edit:${project.id}:telegram` }],
+        [{ text: `Website: ${md.website || "—"}`, callback_data: `meta_edit:${project.id}:website` }, { text: `Image: ${md.image ? "✅" : "—"}`, callback_data: `meta_edit:${project.id}:image` }],
+        [{ text: "🚀 Deploy Metadata", callback_data: `meta_deploy:${project.id}` }],
+        [{ text: "📋 Clone Metadata", callback_data: "unavailable" }],
+        [{ text: "⬅️ Back", callback_data: `open_project:${project.id}` }]
+      ]
+    }
+  };
+}
+
+// ---------- Webhook handlers ----------
+for (const path of webhookPaths) {
+  app.post(path, async (req, res) => {
     const update = req.body;
     try {
-      // ---------- Messages ----------
+      // ---- Incoming messages ----
       if (update.message) {
         const chatId = update.message.chat.id;
         const userId = update.message.from.id;
-        const text = update.message.text;
+        const text = update.message.text || "";
 
-        // if user was in flow awaiting project name
-        if (userStates[userId]?.step === "awaiting_project_name") {
-          const name = (text || "").trim();
-          if (!name) {
-            await sendMessage(chatId, "❌ Name cannot be empty. Send a valid project name.");
+        // If user is in a flow expecting metadata value
+        const state = userStates[userId];
+        if (state && state.step === "editing_metadata") {
+          const projectId = state.projectId;
+          const field = state.field;
+          const value = text.trim();
+          if (!value) {
+            await sendMessage(chatId, "❌ Empty value — please send a non-empty value.");
             return res.sendStatus(200);
           }
-          const project = projectStore.addProject(userId, name);
+          projectStore.updateMetadata(userId, projectId, field, value);
+          // if mandatory fields filled? we keep deploy logic in button
           delete userStates[userId];
-          await sendMessage(chatId, `✅ Project *${project.name}* created!`, {
-            reply_markup: { inline_keyboard: [[{ text: "📂 Your Projects", callback_data: "your_projects" }, { text: "⬅️ Back", callback_data: "home" }]] }
+          await sendMessage(chatId, `✅ ${field} updated!`, {
+            reply_markup: metadataMenu(projectStore.getProject(userId, projectId)).reply_markup
           });
           return res.sendStatus(200);
         }
 
-        // commands
+        // Commands
         if (text === "/start") {
           const menu = startMenu();
           await sendMessage(chatId, menu.text, { reply_markup: menu.reply_markup });
@@ -170,106 +191,4 @@ for (const p of webhookPaths) {
 
         if (text === "/settings") {
           const menu = settingsMenu();
-          await sendMessage(chatId, menu.text, { reply_markup: menu.reply_markup });
-          return res.sendStatus(200);
-        }
-      }
-
-      // ---------- Callback queries (button clicks) ----------
-      if (update.callback_query) {
-        const chatId = update.callback_query.message.chat.id;
-        const messageId = update.callback_query.message.message_id;
-        const data = update.callback_query.data;
-        const userId = update.callback_query.from.id;
-
-        // Home
-        if (data === "home") {
-          const menu = homeMenu(update.callback_query.from.first_name);
-          await editMessage(chatId, messageId, menu.text, { reply_markup: menu.reply_markup });
-          return res.sendStatus(200);
-        }
-
-        if (data === "settings") {
-          const menu = settingsMenu();
-          await editMessage(chatId, messageId, menu.text, { reply_markup: menu.reply_markup });
-          return res.sendStatus(200);
-        }
-
-        if (data === "unavailable") {
-          const menu = unavailableMenu();
-          await editMessage(chatId, messageId, menu.text, { reply_markup: menu.reply_markup });
-          return res.sendStatus(200);
-        }
-
-        // Your projects list
-        if (data === "your_projects") {
-          const rows = projectListButtons(userId);
-          if (!rows) {
-            await editMessage(chatId, messageId, "📂 You don't have any projects yet.", {
-              reply_markup: { inline_keyboard: [[{ text: "🚀 Create New Project", callback_data: "create_project" }, { text: "⬅️ Back", callback_data: "home" }]] }
-            });
-            return res.sendStatus(200);
-          }
-          await editMessage(chatId, messageId, "📂 Your Projects:", { reply_markup: { inline_keyboard: rows } });
-          return res.sendStatus(200);
-        }
-
-        // Create new project (start flow)
-        if (data === "create_project") {
-          userStates[userId] = { step: "awaiting_project_name" };
-          await sendMessage(chatId, "✏️ Send me the name of your new project.");
-          return res.sendStatus(200);
-        }
-
-        // Delete project
-        if (data.startsWith("delete_project:")) {
-          const projectId = data.split(":")[1];
-          const ok = projectStore.deleteProject(userId, projectId);
-          if (ok) {
-            await editMessage(chatId, messageId, "🗑️ Project deleted.", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]] } });
-          } else {
-            await sendMessage(chatId, "⚠️ Unable to delete project (not found).");
-          }
-          return res.sendStatus(200);
-        }
-
-        // Open project detail
-        if (data.startsWith("open_project:")) {
-          const projectId = data.split(":")[1];
-          const proj = projectStore.getProject(userId, projectId);
-          if (!proj) {
-            await sendMessage(chatId, "⚠️ Project not found.");
-            return res.sendStatus(200);
-          }
-          const menu = projectDetailMenu(proj);
-          await editMessage(chatId, messageId, menu.text, { reply_markup: menu.reply_markup });
-          return res.sendStatus(200);
-        }
-
-        // metadata & wallets (placeholders for now)
-        if (data.startsWith("metadata:")) {
-          const projectId = data.split(":")[1];
-          await editMessage(chatId, messageId, "📝 Token Metadata — work in progress", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `open_project:${projectId}` }]] } });
-          return res.sendStatus(200);
-        }
-
-        if (data.startsWith("wallets:")) {
-          const projectId = data.split(":")[1];
-          await editMessage(chatId, messageId, "👛 Project Wallets — work in progress", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `open_project:${projectId}` }]] } });
-          return res.sendStatus(200);
-        }
-      }
-    } catch (err) {
-      console.error("Error handling update:", err);
-    }
-
-    res.sendStatus(200);
-  });
-}
-
-// Health root
-app.get("/", (_req, res) => res.send("✅ Vortex bot server running"));
-
-// Start
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+          await sendMessage(chatId, menu.text, { reply_markup: menu.reply_m
