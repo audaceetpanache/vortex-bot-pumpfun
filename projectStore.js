@@ -47,7 +47,7 @@ class ProjectStore {
     this.projects[chatId] = this.projects[chatId].filter((p) => p.id !== projectId);
   }
 
-  // --- Gestion de l'édition (héritée de ton ancien code)
+  // --- Gestion de l'édition
   startEditing(chatId, projectId, field) {
     this.editing[chatId] = { projectId, field };
   }
@@ -58,6 +58,18 @@ class ProjectStore {
 
   stopEditing(chatId) {
     delete this.editing[chatId];
+  }
+
+  // --- Appliquer l'édition (appelé après réception du message texte de l'utilisateur)
+  applyEdit(chatId, value) {
+    const edit = this.isEditing(chatId);
+    if (!edit) return null;
+
+    const { projectId, field } = edit;
+    const updated = this.updateProject(chatId, projectId, field, value);
+
+    this.stopEditing(chatId);
+    return updated;
   }
 }
 
