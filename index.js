@@ -25,20 +25,22 @@ function getStartMenu() {
   return {
     text: `🌟 Welcome to VORTEX!
 
-    🔥 Where Things Happen! 🔥
+🔥 Where the magic happens! 🔥
 
-    Availables Features:
-    - Launch pump.fun tokens
-    - Create or import multiple wallets
-    - Auto-fund wallets via SOL disperser
-    - CTO pump.fun/raydium tokens
-    - Delayed bundle on pump.fun
-    - Advanced swap manager with intervals, sell all functions
-    - Anti-MEV protection`,
+Available Features:
+• 🚀 Launch pump.fun tokens
+• 👛 Create or import multiple wallets
+• 💸 Auto-fund wallets with SOL disperser
+• 📊 Manage pump.fun / Raydium tokens
+• ⏳ Delayed bundles on pump.fun
+• 🔄 Advanced swap manager (intervals, sell-all)
+• 🛡️ Anti-MEV protection`,
     reply_markup: {
       inline_keyboard: [
-        [{ text: "🏠 Home", callback_data: "home" }],
-        [{ text: "⚙️ Settings", callback_data: "settings" }]
+        [
+          { text: "🏠 Home", callback_data: "home" },
+          { text: "⚙️ Settings", callback_data: "settings" }
+        ]
       ]
     }
   };
