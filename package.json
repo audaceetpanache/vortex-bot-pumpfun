@@ -1,12 +1,14 @@
 {
-  "name": "telegram-bot",
+  "name": "vortex-bot",
   "version": "1.0.0",
+  "description": "Telegram bot VORTEX (Inline Keyboard Only)",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "node-telegram-bot-api": "^0.61.0"
+    "node-telegram-bot-api": "^0.66.0"
   }
 }
