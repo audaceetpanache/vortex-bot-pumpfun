@@ -49,31 +49,40 @@ Available Features:
 
 function getHomeMenu() {
   return {
-    text: `Yo! Nice to see you again! 🔥
+    text: `👋 Welcome back!
 
-What’s the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+What’s next? Pick an option below:
 
-Hit the buttons below and let's make it happen:`,
+• 📂 My Projects  
+• 🚀 Create a New Project  
+• 🚀 Spam Launch  
+• 🤖 Bump Bot  
+• 💰 Withdraw All SOL  
+• 🎁 Claim Dev Rewards  
+• 🔗 Referrals  
+• ❓ Help  
+• 👥 Discord`,
     reply_markup: {
       inline_keyboard: [
         [
-          { text: "📂 Your Projects", callback_data: "my_projects" },
+          { text: "📂 My Projects", callback_data: "my_projects" },
           { text: "🚀 Create New Project", callback_data: "create_project" }
         ],
-        [{ text: "🚀 SPAM LAUNCH", callback_data: "unavailable_home" }],
-        [{ text: "🤑 BUMP BOT 🤑", callback_data: "unavailable_home" }],
-        [{ text: "💰 GET ALL SOL", callback_data: "unavailable_home" }],
+        [{ text: "🚀 Spam Launch", callback_data: "unavailable_home" }],
+        [{ text: "🤖 Bump Bot", callback_data: "unavailable_home" }],
+        [{ text: "💰 Withdraw All SOL", callback_data: "unavailable_home" }],
+        [{ text: "🎁 Claim Dev Rewards", callback_data: "unavailable_home" }],
         [
-          { text: "🎁 CLAIM DEV REWARDS", callback_data: "unavailable_home" },
           { text: "🔗 Referrals", callback_data: "unavailable_home" },
-          { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" }
+          { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" },
+          { text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }
         ],
-        [{ text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }],
         [{ text: "⬅️ Back", callback_data: "back_start" }]
       ]
     }
   };
 }
+
 
 function getSettingsMenu() {
   return {
