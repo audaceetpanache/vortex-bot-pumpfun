@@ -10,78 +10,64 @@ const app = express();
 app.use(bodyParser.json());
 
 const TOKEN = process.env.BOT_TOKEN;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "SECRET";
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
+const WEBHOOK_URL = `${process.env.RENDER_EXTERNAL_URL}/webhook/${WEBHOOK_SECRET}`;
 
-// --- utility function to send message
-async function sendMessage(chatId, text, reply_markup = null) {
-  const payload = { chat_id: chatId, text, parse_mode: "Markdown" };
-  if (reply_markup) payload.reply_markup = reply_markup;
+// --- Utility: Send message
+async function sendMessage(chatId, text, replyMarkup = null) {
+  const body = { chat_id: chatId, text, parse_mode: "Markdown" };
+  if (replyMarkup) body.reply_markup = replyMarkup;
   await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
 }
 
-// --- start menu
+// --- Menus
 function getStartMenu() {
   return {
-    text: "👋 Welcome to Vortex Bot!\n\nManage your projects, wallets, and settings easily.",
+    text: "👋 Bienvenue dans le bot Vortex !\n\nAvec ce bot, tu peux créer et gérer tes projets facilement.",
     reply_markup: {
       inline_keyboard: [
-        [{ text: "🏠 Home", callback_data: "home" }],
-        [{ text: "⚙️ Settings", callback_data: "settings" }],
-        [{ text: "🔫 LSnip Settings", callback_data: "lsnipesettings" }],
+        [{ text: "🏠 Accueil", callback_data: "home" }],
+        [{ text: "⚙️ Paramètres", callback_data: "settings" }],
+        [{ text: "🛠 LSnipe Settings", callback_data: "lsnipesettings" }]
       ],
     },
   };
 }
 
-// --- home menu
 function getHomeMenu(chatId) {
   const projects = projectStore.getProjects(chatId);
-  const buttons = projects.map((p, idx) => [
-    { text: `${p.name} (${p.symbol})`, callback_data: `project_${idx}` },
+  const keyboard = projects.map((p) => [
+    { text: `📁 ${p.name}`, callback_data: `open_${p.id}` },
   ]);
-  buttons.push([{ text: "➕ New Project", callback_data: "new_project" }]);
-  return {
-    text: "🏠 Your Projects",
-    reply_markup: { inline_keyboard: buttons },
-  };
+  keyboard.push([{ text: "➕ Nouveau projet", callback_data: "new_project" }]);
+  return { text: "🏠 Accueil - Tes projets :", reply_markup: { inline_keyboard: keyboard } };
 }
 
-// --- settings menu
-function getSettingsMenu() {
-  return {
-    text: "⚙️ Settings\n\nGeneral bot settings will be here.",
-    reply_markup: {
-      inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]],
-    },
-  };
-}
-
-// --- project details
-function getProjectMenu(chatId, projectIndex) {
-  const project = projectStore.getProject(chatId, projectIndex);
-  if (!project) return { text: "❌ Project not found", reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "home" }]] } };
+function getProjectMenu(chatId, projectId) {
+  const project = projectStore.getProject(chatId, projectId);
+  if (!project) return { text: "❌ Projet introuvable." };
 
   return {
-    text: `📌 *${project.name}*\nSymbol: ${project.symbol}\nDescription: ${project.description}\nWallet: ${project.wallet}`,
+    text: `📁 *${project.name}*\n\n💠 Symbole : ${project.symbol}\n📝 Description : ${project.description}\n👛 Wallet : ${project.wallet}`,
     reply_markup: {
       inline_keyboard: [
-        [{ text: "✏️ Edit Name", callback_data: `edit_name_${projectIndex}` }],
-        [{ text: "✏️ Edit Symbol", callback_data: `edit_symbol_${projectIndex}` }],
-        [{ text: "✏️ Edit Description", callback_data: `edit_description_${projectIndex}` }],
-        [{ text: "✏️ Edit Wallet", callback_data: `edit_wallet_${projectIndex}` }],
-        [{ text: "🗑 Delete Project", callback_data: `delete_project_${projectIndex}` }],
-        [{ text: "⬅️ Back", callback_data: "home" }],
+        [{ text: "✏️ Nom", callback_data: `edit_name_${projectId}` }],
+        [{ text: "✏️ Symbole", callback_data: `edit_symbol_${projectId}` }],
+        [{ text: "✏️ Description", callback_data: `edit_description_${projectId}` }],
+        [{ text: "✏️ Wallet", callback_data: `edit_wallet_${projectId}` }],
+        [{ text: "🗑 Supprimer", callback_data: `delete_${projectId}` }],
+        [{ text: "⬅️ Retour", callback_data: "home" }],
       ],
     },
   };
 }
 
-// --- webhook route
+// --- Webhook
 app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
   const update = req.body;
 
@@ -92,85 +78,86 @@ app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
     if (text === "/start") {
       const menu = getStartMenu();
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (text === "/home") {
+    }
+
+    if (text === "/home") {
       const menu = getHomeMenu(chatId);
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (text === "/lsnipesettings") {
+    }
+
+    if (text === "/lsnipesettings") {
       const menu = getLSnipeSettingsMenu();
       await sendMessage(chatId, menu.text, menu.reply_markup);
     }
-  } else if (update.callback_query) {
+  }
+
+  if (update.callback_query) {
     const chatId = update.callback_query.message.chat.id;
     const data = update.callback_query.data;
 
     if (data === "home") {
       const menu = getHomeMenu(chatId);
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "settings") {
-      const menu = getSettingsMenu();
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "lsnipesettings") {
+    }
+
+    if (data === "lsnipesettings") {
       const menu = getLSnipeSettingsMenu();
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "unavailable") {
+    }
+
+    if (data === "unavailable") {
       const menu = getUnavailableMenu();
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data === "new_project") {
-      projectStore.addProject(chatId, {
-        name: "New Project",
-        symbol: "XXX",
-        description: "Empty description",
-        wallet: "0x0000000000000000000000000000000000000000",
-      });
+    }
+
+    if (data === "new_project") {
+      const newProj = projectStore.addProject(chatId, "Nouveau projet");
+      const menu = getProjectMenu(chatId, newProj.id);
+      await sendMessage(chatId, menu.text, menu.reply_markup);
+    }
+
+    if (data.startsWith("open_")) {
+      const projectId = data.split("_")[1];
+      const menu = getProjectMenu(chatId, projectId);
+      await sendMessage(chatId, menu.text, menu.reply_markup);
+    }
+
+    if (data.startsWith("delete_")) {
+      const projectId = data.split("_")[1];
+      projectStore.deleteProject(chatId, projectId);
       const menu = getHomeMenu(chatId);
       await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data.startsWith("project_")) {
-      const index = parseInt(data.split("_")[1]);
-      const menu = getProjectMenu(chatId, index);
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data.startsWith("delete_project_")) {
-      const index = parseInt(data.split("_")[2]);
-      projectStore.deleteProject(chatId, index);
-      const menu = getHomeMenu(chatId);
-      await sendMessage(chatId, menu.text, menu.reply_markup);
-    } else if (data.startsWith("edit_")) {
-      const [_, field, index] = data.split("_");
-      projectStore.setEditing(chatId, field, parseInt(index));
-      await sendMessage(chatId, `✏️ Send me the new value for *${field}*`);
+    }
+
+    if (data.startsWith("edit_")) {
+      const [_, field, projectId] = data.split("_");
+      projectStore.setPendingEdit(chatId, projectId, field);
+      await sendMessage(chatId, `✏️ Envoie-moi la nouvelle valeur pour *${field}* :`);
     }
   }
 
-  res.sendStatus(200);
-});
-
-// --- handle edition responses
-app.post(`/webhook/${WEBHOOK_SECRET}`, async (req, res) => {
-  const update = req.body;
-  if (update.message) {
+  if (update.message && update.message.text) {
     const chatId = update.message.chat.id;
-    const editing = projectStore.getEditing(chatId);
-    if (editing) {
-      projectStore.updateProjectField(chatId, editing.index, editing.field, update.message.text);
-      projectStore.clearEditing(chatId);
-      const menu = getProjectMenu(chatId, editing.index);
-      await sendMessage(chatId, `✅ Updated *${editing.field}*`, menu.reply_markup);
+    const pending = projectStore.getPendingEdit(chatId);
+
+    if (pending) {
+      projectStore.updateProjectField(chatId, pending.projectId, pending.field, update.message.text);
+      projectStore.clearPendingEdit(chatId);
+
+      const menu = getProjectMenu(chatId, pending.projectId);
+      await sendMessage(chatId, "✅ Champ mis à jour !");
+      await sendMessage(chatId, menu.text, menu.reply_markup);
     }
   }
+
   res.sendStatus(200);
 });
 
-// --- start server
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, async () => {
-  console.log(`✅ Server running on port ${PORT}`);
+// --- Start server
+app.listen(10000, async () => {
+  console.log("✅ Serveur en ligne sur port 10000");
 
-  // configure webhook automatically
-  const url = `https://vortex-bot-pumpfun.onrender.com/webhook/${WEBHOOK_SECRET}`;
-  const response = await fetch(`${TELEGRAM_API}/setWebhook`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  const data = await response.json();
-  console.log("✅ Webhook setup:", data);
+  const res = await fetch(`${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL}`);
+  const data = await res.json();
+  console.log("✅ Webhook configuré :", data);
 });
