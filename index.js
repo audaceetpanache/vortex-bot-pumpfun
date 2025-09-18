@@ -55,7 +55,7 @@ function requireWalletPopup(chatId, projectId) {
   bot.sendMessage(chatId, "⛔️ You need to create a Wallet first", {
     reply_markup: { inline_keyboard: [
       [{ text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
-      [{ text: "⬅️ Back", callback_data: `project_main_${projectId}` }],
+      [{ text: "⬅️ Back", callback_data: "back_home" }],
     ] }
   });
 }
@@ -229,7 +229,7 @@ Select your preferred platform:`, {
       reply_markup: { inline_keyboard: [
         [{ text: "🚀 Pump.fun", callback_data: "create_project_platform_pump" }, { text: "💎 BONK", callback_data: "create_project_platform_bonk" }],
         [{ text: "🌟 Ray Launchlab", callback_data: "create_project_platform_ray" }],
-        [{ text: "⬅️ Back", callback_data: "create_project" }]
+        [{ text: "⬅️ Back", callback_data: "back_home" }]
       ]}
     });
   }
@@ -256,7 +256,7 @@ Please set up your project by configuring:
 What would you like to set up first?`, {
       reply_markup: { inline_keyboard: [
         [{ text: "📝 Token Metadata", callback_data: `token_meta_${projectId}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
-        [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }, { text: "⬅️ Back to Menu", callback_data: "back_home" }]
+        [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }, { text: "⬅️ Back", callback_data: "back_home" }]
       ]}
     });
   }
@@ -326,7 +326,7 @@ Select a field to edit:
       [{ text: `📱 Telegram${meta.telegram ? " ✅" : ""}`, callback_data: `meta_telegram_${projectId}` }, { text: `🌐 Website${meta.website ? " ✅" : ""}`, callback_data: `meta_website_${projectId}` }],
       [{ text: `🖼️ Image${meta.image ? " ✅" : ""}`, callback_data: `meta_image_${projectId}` }],
       [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }, { text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
-      [{ text: "⬅️ Back", callback_data: `project_main_${projectId}` }]
+      [{ text: "⬅️ Back", callback_data: "back_home" }]
     ];
     return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
@@ -344,7 +344,7 @@ Select a wallet to view details:`;
     const buttons = [
       [{ text: "✚ Create Wallet", callback_data: `wallet_create_${projectId}` }, { text: "📥 Import Wallet", callback_data: `wallet_import_${projectId}` }],
       [{ text: "👑 Import Creator", callback_data: `wallet_creator_${projectId}` }],
-      [{ text: "⬅️ Back to Project", callback_data: `project_main_${projectId}` }]
+      [{ text: "⬅️ Back to Project", callback_data: "back_home" }]
     ];
     return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
@@ -368,7 +368,7 @@ bot.on('message', async (msg) => {
     project.metadata.name = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Name set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Name set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   if (userState.type === "meta_symbol") {
@@ -377,7 +377,7 @@ bot.on('message', async (msg) => {
     project.metadata.symbol = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Symbol set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Symbol set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   if (userState.type === "meta_desc") {
@@ -386,7 +386,7 @@ bot.on('message', async (msg) => {
     project.metadata.description = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Description saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Description saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   if (userState.type === "meta_twitter") {
@@ -395,7 +395,7 @@ bot.on('message', async (msg) => {
     project.metadata.twitter = text.toLowerCase() === "skip" ? null : text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Twitter saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Twitter saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   if (userState.type === "meta_telegram") {
@@ -404,7 +404,7 @@ bot.on('message', async (msg) => {
     project.metadata.telegram = text.toLowerCase() === "skip" ? null : text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Telegram saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Telegram saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   if (userState.type === "meta_website") {
@@ -413,7 +413,7 @@ bot.on('message', async (msg) => {
     project.metadata.website = text.toLowerCase() === "skip" ? null : text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Website saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Website saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   // --------------------
@@ -432,7 +432,7 @@ bot.on('message', async (msg) => {
     }
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Wallets saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `project_wallet_${project.id}` }]] } });
+    return bot.sendMessage(chatId, `✅ Wallets saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 });
 
@@ -479,7 +479,7 @@ bot.on('callback_query', (query) => {
     if (!project.metadata.name || !project.metadata.symbol) {
       return bot.sendMessage(chatId, "❌ Metadata not deployed. You need to complete your Metadata.");
     }
-    return bot.sendMessage(chatId, "✅ Metadata deployed", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+    return bot.sendMessage(chatId, "✅ Metadata deployed", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
   }
 
   // CLONE METADATA
