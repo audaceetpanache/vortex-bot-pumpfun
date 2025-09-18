@@ -60,8 +60,22 @@ function requireWalletPopup(chatId, projectId) {
   });
 }
 
-function backHome(chatId, firstName) {
-  bot.emit("text", { chat: { id: chatId }, from: { first_name: firstName }, text: "/home" });
+function backHome(chatId, firstName = "friend") {
+  bot.sendMessage(chatId, `Yo, ${firstName}! Glad you're here! 🔥
+What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+Hit the buttons below and let's make it happen:`, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "📁 Your Projects", callback_data: "my_projects" }, { text: "🚀 Create New Project", callback_data: "create_project" }],
+        [{ text: "🚀 SPAM LAUNCH", callback_data: "need_project" }],
+        [{ text: "🤑 BUMP BOT 🤑", callback_data: "need_project" }],
+        [{ text: "💰 GET ALL SOL", callback_data: "need_project" }],
+        [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "need_project" }],
+        [{ text: "🔗 Referrals", callback_data: "need_project" }, { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" }],
+        [{ text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }]
+      ]
+    }
+  });
 }
 
 // --------------------
