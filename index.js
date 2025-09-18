@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
 const SECRET = process.env.WEBHOOK_SECRET || "defaultsecret";
 const PORT = process.env.PORT || 10000;
 
