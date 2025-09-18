@@ -163,6 +163,9 @@ bot.on('callback_query', async (query) => {
   const firstName = query.from.first_name || "friend";
   const dataQ = query.data;
 
+  // On répond toujours à Telegram
+  await bot.answerCallbackQuery(query.id);
+  
   // --------------------
   // BACK HOME
   // --------------------
