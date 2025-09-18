@@ -6,11 +6,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
 const SECRET = process.env.WEBHOOK_SECRET || "defaultsecret";
 const PORT = process.env.PORT || 10000;
 
-if (!TOKEN) { console.error("❌ TELEGRAM_BOT_TOKEN missing."); process.exit(1); }
+if (!TOKEN) { console.error("❌ BOT_TOKEN missing."); process.exit(1); }
 
 // --------------------
 // DATA PERSISTENCE
