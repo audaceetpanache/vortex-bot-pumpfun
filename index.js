@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const TOKEN = process.env.BOT_TOKEN;
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const SECRET = process.env.WEBHOOK_SECRET || "defaultsecret";
 const PORT = process.env.PORT || 10000;
 
@@ -51,18 +51,6 @@ function sendNeedProject(chatId) {
   });
 }
 
-function backHome(chatId, firstName) {
-  bot.emit("text", { chat: { id: chatId }, from: { first_name: firstName }, text: "/home" });
-}
-
-function buildProjectButtons(userId) {
-  const projects = getUserProjects(userId);
-  const buttons = projects.map(p => [{ text: `${p.name || p.id}`, callback_data: `project_${p.id}` }]);
-  buttons.push([{ text: "🚀 Create New Project", callback_data: "create_project" }]);
-  buttons.push([{ text: "⬅️ Back", callback_data: "back_home" }]);
-  return buttons;
-}
-
 function requireWalletPopup(chatId, projectId) {
   bot.sendMessage(chatId, "⛔️ You need to create a Wallet first", {
     reply_markup: { inline_keyboard: [
@@ -70,6 +58,10 @@ function requireWalletPopup(chatId, projectId) {
       [{ text: "⬅️ Back", callback_data: `project_main_${projectId}` }],
     ] }
   });
+}
+
+function backHome(chatId, firstName) {
+  bot.emit("text", { chat: { id: chatId }, from: { first_name: firstName }, text: "/home" });
 }
 
 // --------------------
@@ -156,293 +148,344 @@ Current Settings:
     ]},
   });
 });
+
 // --------------------
-// CALLBACK QUERIES
+// PROCHAIN BLOC
 // --------------------
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const dataCB = callbackQuery.data;
-  const firstName = callbackQuery.from.first_name || "friend";
+// Dans le Bloc 2, on va ajouter tous les flows “Create New Project”, “My Projects”, “FICHE PROJET”,
+// Token Metadata et Project Wallet, ligne par ligne comme dans ton brief.
+
+// --------------------
+// CALLBACK QUERIES - BLOQUE 2
+// --------------------
+bot.on('callback_query', async (query) => {
+  const chatId = query.message.chat.id;
+  const firstName = query.from.first_name || "friend";
+  const dataQ = query.data;
 
   // --------------------
   // BACK HOME
   // --------------------
-  if (dataCB === "back_home") {
-    return bot.emit("text", { chat: { id: chatId }, from: { first_name: firstName }, text: "/home" });
+  if (dataQ === "back_home") {
+    return backHome(chatId, firstName);
   }
 
   // --------------------
-  // NEED PROJECT FLOW
+  // NEED PROJECT POPUP
   // --------------------
-  if (dataCB === "need_project") {
+  if (dataQ === "need_project") {
     return sendNeedProject(chatId);
   }
 
   // --------------------
   // MY PROJECTS
   // --------------------
-  if (dataCB === "my_projects") {
+  if (dataQ === "my_projects") {
     const projects = getUserProjects(chatId);
-    let text;
     if (projects.length === 0) {
-      text = `Yo ${firstName}, you don’t have any Project yet! Let’s start a new one!`;
-    } else {
-      text = `Yo ${firstName}! Here's your project list 📋 Select a project to manage or create a new one:`;
+      return bot.sendMessage(chatId, `Yo ${firstName}, you don’t have any Project yet! Let’s start a new one!`, {
+        reply_markup: { inline_keyboard: [
+          [{ text: "🚀 Create New Project", callback_data: "create_project" }],
+          [{ text: "⬅️ Back", callback_data: "back_home" }]
+        ]}
+      });
     }
-    const buttons = buildProjectButtons(chatId);
-    return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
+    // Liste projets
+    const buttons = projects.map(p => [{ text: p.name || p.id, callback_data: `project_main_${p.id}` }]);
+    buttons.push([{ text: "🚀 Create New Project", callback_data: "create_project" }]);
+    buttons.push([{ text: "⬅️ Back", callback_data: "back_home" }]);
+    return bot.sendMessage(chatId, `Yo ${firstName}! Here's your project list 📋 Select a project to manage or create a new one:`, { reply_markup: { inline_keyboard: buttons } });
   }
 
   // --------------------
   // CREATE NEW PROJECT FLOW
   // --------------------
-  if (dataCB === "create_project") {
-    // ETAPE 1 - Choose Project Type
-    const buttons = [
-      [{ text: "🚀 Create new coin", callback_data: "create_project_coin" }, { text: "🎯 Create CTO", callback_data: "create_project_cto" }],
-      [{ text: "⬅️ Back", callback_data: "back_home" }],
-    ];
+  if (dataQ === "create_project") {
+    // ETAPE 1 - Project Type
     return bot.sendMessage(chatId, `🎯 Choose Project Type
 • Create new coin on pump.fun
 • Make CTO on any pump.fun or raydium token
-Select your preferred option:`, { reply_markup: { inline_keyboard: buttons } });
+Select your preferred option:`, {
+      reply_markup: { inline_keyboard: [
+        [{ text: "🚀 Create new coin", callback_data: "create_project_type_coin" }, { text: "🎯 Create CTO", callback_data: "create_project_type_cto" }],
+        [{ text: "⬅️ Back", callback_data: "back_home" }]
+      ]}
+    });
   }
 
-  if (dataCB === "create_project_cto") {
+  if (dataQ === "create_project_type_cto") {
     return bot.sendMessage(chatId, "🚧 CTO token creation feature is not finished yet. Will be available soon!", {
       reply_markup: { inline_keyboard: [[{ text: "OK", callback_data: "create_project" }]] }
     });
   }
 
-  if (dataCB === "create_project_coin") {
-    // ETAPE 2 - Choose Platform
-    const buttons = [
-      [{ text: "🚀 Pump.fun", callback_data: "create_project_platform_pump" }, { text: "💎 BONK", callback_data: "create_project_platform_bonk" }],
-      [{ text: "🌟 Ray Launchlab", callback_data: "create_project_platform_ray" }],
-      [{ text: "⬅️ Back", callback_data: "create_project" }],
-    ];
+  if (dataQ === "create_project_type_coin") {
+    // ETAPE 2 - Platform
     return bot.sendMessage(chatId, `🎯 Choose Platform for Your New Coin
 • Pump.fun - Classic Solana token launch
 • BONK - Launch with BONK pair
 • Ray Launchlab - Advanced token launch
-Select your preferred platform:`, { reply_markup: { inline_keyboard: buttons } });
+Select your preferred platform:`, {
+      reply_markup: { inline_keyboard: [
+        [{ text: "🚀 Pump.fun", callback_data: "create_project_platform_pump" }, { text: "💎 BONK", callback_data: "create_project_platform_bonk" }],
+        [{ text: "🌟 Ray Launchlab", callback_data: "create_project_platform_ray" }],
+        [{ text: "⬅️ Back", callback_data: "create_project" }]
+      ]}
+    });
   }
 
-  if (dataCB === "create_project_platform_bonk" || dataCB === "create_project_platform_ray") {
-    return bot.sendMessage(chatId, "🚧 This token creation feature is not finished yet. Will be available soon!", {
+  if (dataQ === "create_project_platform_bonk" || dataQ === "create_project_platform_ray") {
+    const msgFeature = dataQ === "create_project_platform_bonk" ? "BONK" : "Ray Launchlab";
+    return bot.sendMessage(chatId, `🚧 ${msgFeature} token creation feature is not finished yet. Will be available soon!`, {
       reply_markup: { inline_keyboard: [[{ text: "OK", callback_data: "create_project" }]] }
     });
   }
 
-  if (dataCB === "create_project_platform_pump") {
-    // ETAPE 3 - Create Project
-    const newProject = {
-      id: generateProjectId(),
-      name: null,
-      symbol: null,
-      description: null,
-      twitter: null,
-      telegram: null,
-      website: null,
-      image: null,
-      wallets: [],
-      status: "⏳ In Progress",
-    };
-    getUserProjects(chatId).push(newProject);
+  if (dataQ === "create_project_platform_pump") {
+    // ETAPE 3 - Création projet
+    const projectId = generateProjectId();
+    const projects = getUserProjects(chatId);
+    const newProject = { id: projectId, name: projectId, metadata: {}, wallets: [], status: "In Progress" };
+    projects.push(newProject);
     saveData();
-
-    const buttons = [
-      [{ text: "📝 Token Metadata", callback_data: `meta_${newProject.id}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${newProject.id}` }],
-      [{ text: "🗑️ Delete Project", callback_data: `delete_project_${newProject.id}` }, { text: "⬅️ Back to Menu", callback_data: "back_home" }],
-    ];
-
     return bot.sendMessage(chatId, `🚀 New Pump.fun Project Created
-Project ID: ${newProject.id}
+Project ID: ${projectId}
 Please set up your project by configuring:
 • Token Metadata (name, symbol, etc.)
 • Project Wallets
-What would you like to set up first?`, { reply_markup: { inline_keyboard: buttons } });
+What would you like to set up first?`, {
+      reply_markup: { inline_keyboard: [
+        [{ text: "📝 Token Metadata", callback_data: `token_meta_${projectId}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
+        [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }, { text: "⬅️ Back to Menu", callback_data: "back_home" }]
+      ]}
+    });
+  }
+
+  // --------------------
+  // FICHE PROJET MAIN
+  // --------------------
+  if (dataQ.startsWith("project_main_")) {
+    const projectId = dataQ.replace("project_main_", "");
+    const project = findProject(chatId, projectId);
+    if (!project) return sendNeedProject(chatId);
+
+    const text = `🏷 Project ${project.id}
+Name: ${project.metadata.name || "Not set"}
+Symbol: ${project.metadata.symbol || "Not set"}
+Status: ⏳ ${project.status}
+What would you like to manage?`;
+    const buttons = [
+      [{ text: "📝 Token Metadata", callback_data: `token_meta_${project.id}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${project.id}` }],
+      [{ text: "🔫 Wallet Warmup", callback_data: `need_wallet_${project.id}` }, { text: "💱 Swap Manager", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🧠 Smart Sell", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🎯 Auto TP", callback_data: `need_wallet_${project.id}` }, { text: "🤖 Market Maker", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🔑 GET CA", callback_data: `need_wallet_${project.id}` }, { text: "🚀 Launch", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🎯 Launch with Bundle", callback_data: `need_wallet_${project.id}` }, { text: "🚀🎯 Launch + Snipe", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🎯🚀 Launch Bundle Snipe", callback_data: `need_wallet_${project.id}` }, { text: "🔴 X LAUNCH", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🗑️ Delete Project", callback_data: `delete_project_${project.id}` }],
+      [{ text: "⬅️ Back", callback_data: "back_home" }]
+    ];
+    return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
+  }
+
+  // --------------------
+  // POPUP NEED WALLET
+  // --------------------
+  if (dataQ.startsWith("need_wallet_")) {
+    const projectId = dataQ.replace("need_wallet_", "");
+    return requireWalletPopup(chatId, projectId);
   }
 
   // --------------------
   // DELETE PROJECT
   // --------------------
-  if (dataCB.startsWith("delete_project_")) {
-    const projectId = dataCB.replace("delete_project_", "");
+  if (dataQ.startsWith("delete_project_")) {
+    const projectId = dataQ.replace("delete_project_", "");
     const projects = getUserProjects(chatId);
     const idx = projects.findIndex(p => p.id === projectId);
-    if (idx !== -1) { projects.splice(idx, 1); saveData(); }
-    return bot.sendMessage(chatId, `🗑️ Project ${projectId} deleted`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
-  }
-
-  // --------------------
-  // PROJECT WALLET
-  // --------------------
-  if (dataCB.startsWith("project_wallet_")) {
-    const projectId = dataCB.replace("project_wallet_", "");
-    const project = findProject(chatId, projectId);
-    if (!project) return sendNeedProject(chatId);
-    const buttons = [
-      [{ text: "✚ Create Wallet", callback_data: `wallet_create_${projectId}` }, { text: "📥 Import Wallet", callback_data: `wallet_import_${projectId}` }],
-      [{ text: "👑 Import Creator", callback_data: `wallet_creator_${projectId}` }],
-      [{ text: "⬅️ Back to Project", callback_data: `project_main_${projectId}` }],
-    ];
-    return bot.sendMessage(chatId, `🏦 Project Wallets
-Project: ${projectId}
-Select a wallet to view details:`, { reply_markup: { inline_keyboard: buttons } });
-  }
-
-  if (dataCB.startsWith("wallet_create_") || dataCB.startsWith("wallet_import_") || dataCB.startsWith("wallet_creator_")) {
-    const projectId = dataCB.split("_")[2];
-    const type = dataCB.split("_")[1];
-    userStates[chatId] = { projectId, field: `wallet_${type}` };
-    return bot.sendMessage(chatId, "Please paste your private keys (one per line, base58 encoded)");
+    if (idx >= 0) { projects.splice(idx, 1); saveData(); }
+    return bot.sendMessage(chatId, `✅ Project ${projectId} deleted.`, {
+      reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] }
+    });
   }
 
   // --------------------
   // TOKEN METADATA
   // --------------------
-  if (dataCB.startsWith("meta_")) {
-    const projectId = dataCB.replace("meta_", "");
+  if (dataQ.startsWith("token_meta_")) {
+    const projectId = dataQ.replace("token_meta_", "");
     const project = findProject(chatId, projectId);
     if (!project) return sendNeedProject(chatId);
-
-    const buttons = [
-      [{ text: `📝 Name ${project.name?`✅`:"❌"}`, callback_data: `edit_name_${projectId}` }, { text: `💎 Symbol ${project.symbol?`✅`:"❌"}`, callback_data: `edit_symbol_${projectId}` }],
-      [{ text: `📋 Description ${project.description?`✅`:"❌"}`, callback_data: `edit_description_${projectId}` }, { text: `🐦 Twitter ${project.twitter?`✅`:"❌"}`, callback_data: `edit_twitter_${projectId}` }],
-      [{ text: `📱 Telegram ${project.telegram?`✅`:"❌"}`, callback_data: `edit_telegram_${projectId}` }, { text: `🌐 Website ${project.website?`✅`:"❌"}`, callback_data: `edit_website_${projectId}` }],
-      [{ text: `🖼️ Image ${project.image?`✅`:"❌"}`, callback_data: `edit_image_${projectId}` }],
-      [{ text: `🚀 DEPLOY METADATA`, callback_data: `deploy_meta_${projectId}` }, { text: `🔄 CLONE METADATA`, callback_data: `clone_meta_${projectId}` }],
-      [{ text: "⬅️ Back", callback_data: `project_main_${projectId}` }],
-    ];
-    return bot.sendMessage(chatId, `🎯 Project ${projectId} Metadata
+    const meta = project.metadata || {};
+    const text = `🎯 Project ${project.id} Metadata
 Select a field to edit:
-❌ Metadata not yet deployed`, { reply_markup: { inline_keyboard: buttons } });
+❌ Metadata not yet deployed`;
+    const buttons = [
+      [{ text: `📝 Name${meta.name ? ": " + meta.name : ""}`, callback_data: `meta_name_${projectId}` }, { text: `💎 Symbol${meta.symbol ? ": " + meta.symbol : ""}`, callback_data: `meta_symbol_${projectId}` }],
+      [{ text: `📋 Description${meta.description ? " ✅" : ""}`, callback_data: `meta_desc_${projectId}` }, { text: `🐦 Twitter${meta.twitter ? " ✅" : ""}`, callback_data: `meta_twitter_${projectId}` }],
+      [{ text: `📱 Telegram${meta.telegram ? " ✅" : ""}`, callback_data: `meta_telegram_${projectId}` }, { text: `🌐 Website${meta.website ? " ✅" : ""}`, callback_data: `meta_website_${projectId}` }],
+      [{ text: `🖼️ Image${meta.image ? " ✅" : ""}`, callback_data: `meta_image_${projectId}` }],
+      [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }, { text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
+      [{ text: "⬅️ Back", callback_data: `project_main_${projectId}` }]
+    ];
+    return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
-// --------------------
-// PROJECT MAIN / FICHE PROJET
-// --------------------
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const dataCB = callbackQuery.data;
 
-  if (dataCB.startsWith("project_main_")) {
-    const projectId = dataCB.replace("project_main_", "");
+  // --------------------
+  // PROJECT WALLET
+  // --------------------
+  if (dataQ.startsWith("project_wallet_")) {
+    const projectId = dataQ.replace("project_wallet_", "");
     const project = findProject(chatId, projectId);
     if (!project) return sendNeedProject(chatId);
-
+    const text = `🏦 Project Wallets
+Project: ${project.id}
+Select a wallet to view details:`;
     const buttons = [
-      [{ text: "📝 Token Metadata", callback_data: `meta_${projectId}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
-      [{ text: "🔫 Wallet Warmup", callback_data: `need_wallet_${projectId}` }, { text: "💱 Swap Manager", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🧠 Smart Sell", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🎯 Auto TP", callback_data: `need_wallet_${projectId}` }, { text: "🤖 Market Maker", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🔑 GET CA", callback_data: `need_wallet_${projectId}` }, { text: "🚀 Launch", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🎯 Launch with Bundle", callback_data: `need_wallet_${projectId}` }, { text: "🚀🎯 Launch + Snipe", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🎯🚀 Launch Bundle Snipe", callback_data: `need_wallet_${projectId}` }, { text: "🔴 X LAUNCH", callback_data: `need_wallet_${projectId}` }],
-      [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }, { text: "⬅️ Back", callback_data: "back_home" }],
+      [{ text: "✚ Create Wallet", callback_data: `wallet_create_${projectId}` }, { text: "📥 Import Wallet", callback_data: `wallet_import_${projectId}` }],
+      [{ text: "👑 Import Creator", callback_data: `wallet_creator_${projectId}` }],
+      [{ text: "⬅️ Back to Project", callback_data: `project_main_${projectId}` }]
     ];
+    return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
+  }
+});
+// --------------------
+// MESSAGE HANDLER - BLOQUE 3
+// --------------------
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+  const userState = userStates[chatId];
 
-    const statusText = `🏷 Project ${project.id}
-Name: ${project.name || "Not set"}
-Symbol: ${project.symbol || "Not set"}
-Status: ${project.status}
-What would you like to manage?`;
+  if (!userState) return; // Pas de flow en cours
 
-    return bot.sendMessage(chatId, statusText, { reply_markup: { inline_keyboard: buttons } });
+  // --------------------
+  // METADATA FIELDS
+  // --------------------
+  if (userState.type === "meta_name") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.name = text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Name set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+  }
+
+  if (userState.type === "meta_symbol") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.symbol = text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Symbol set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+  }
+
+  if (userState.type === "meta_desc") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.description = text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Description saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+  }
+
+  if (userState.type === "meta_twitter") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.twitter = text.toLowerCase() === "skip" ? null : text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Twitter saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+  }
+
+  if (userState.type === "meta_telegram") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.telegram = text.toLowerCase() === "skip" ? null : text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Telegram saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
+  }
+
+  if (userState.type === "meta_website") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    project.metadata.website = text.toLowerCase() === "skip" ? null : text;
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Website saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
   }
 
   // --------------------
-  // POPUP “NEED WALLET”
+  // WALLET INPUT
   // --------------------
-  if (dataCB.startsWith("need_wallet_")) {
-    const projectId = dataCB.replace("need_wallet_", "");
-    return requireWalletPopup(chatId, projectId);
+  if (userState.type === "wallet_create" || userState.type === "wallet_import" || userState.type === "wallet_creator") {
+    const project = findProject(chatId, userState.projectId);
+    if (!project) return sendNeedProject(chatId);
+    const keys = text.split("\n").map(k => k.trim()).filter(k => k.length > 0);
+    if (userState.type === "wallet_create") {
+      project.wallets.push(...keys.map(k => ({ type: "user", key: k })));
+    } else if (userState.type === "wallet_import") {
+      project.wallets.push(...keys.map(k => ({ type: "imported", key: k })));
+    } else if (userState.type === "wallet_creator") {
+      project.wallets.push(...keys.map(k => ({ type: "creator", key: k })));
+    }
+    saveData();
+    delete userStates[chatId];
+    return bot.sendMessage(chatId, `✅ Wallets saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `project_wallet_${project.id}` }]] } });
   }
 });
 
 // --------------------
-// EDIT METADATA FIELDS
+// CALLBACK QUERY HANDLER ADDITIONAL
 // --------------------
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const dataCB = callbackQuery.data;
+bot.on('callback_query', (query) => {
+  const chatId = query.message.chat.id;
+  const dataQ = query.data;
 
-  // Fields
-  const metaFields = ["name", "symbol", "description", "twitter", "telegram", "website", "image"];
-  for (let field of metaFields) {
-    if (dataCB.startsWith(`edit_${field}_`)) {
-      const projectId = dataCB.replace(`edit_${field}_`, "");
-      userStates[chatId] = { projectId, field };
-      let prompt = "";
-      switch(field){
-        case "name": prompt="Enter the name for your token:"; break;
-        case "symbol": prompt="Enter the symbol for your token (e.g., BTC, ETH):"; break;
-        case "description": prompt="Enter a description for your token:"; break;
-        case "twitter": prompt='Enter your Twitter handle (or type "skip"):';
-        break;
-        case "telegram": prompt='Enter your Telegram link (or type "skip"):';
-        break;
-        case "website": prompt='Enter your website URL (or type "skip"):';
-        break;
-        case "image": prompt="Send an image for your token:"; break;
-      }
-      return bot.sendMessage(chatId, prompt);
+  // METADATA EDITING
+  if (dataQ.startsWith("meta_")) {
+    const parts = dataQ.split("_");
+    const field = parts[1];
+    const projectId = parts[2];
+    userStates[chatId] = { type: `meta_${field}`, projectId };
+    let prompt = "";
+    switch (field) {
+      case "name": prompt = "Enter the name for your token:"; break;
+      case "symbol": prompt = "Enter the symbol for your token (e.g., BTC, ETH):"; break;
+      case "desc": prompt = "Enter a description for your token:"; break;
+      case "twitter": prompt = "Enter your Twitter handle (or type 'skip'):"; break;
+      case "telegram": prompt = "Enter your Telegram link (or type 'skip'):"; break;
+      case "website": prompt = "Enter your website URL (or type 'skip'):"; break;
+      case "image": prompt = "Send an image for your token:"; break;
     }
+    bot.sendMessage(chatId, prompt);
+  }
+
+  // WALLET EDITING
+  if (dataQ.startsWith("wallet_")) {
+    const parts = dataQ.split("_");
+    const type = parts[1]; // create / import / creator
+    const projectId = parts[2];
+    userStates[chatId] = { type: `wallet_${type}`, projectId };
+    bot.sendMessage(chatId, "Please paste your private keys (one per line, base58 encoded)");
   }
 
   // DEPLOY METADATA
-  if (dataCB.startsWith("deploy_meta_")) {
-    const projectId = dataCB.replace("deploy_meta_", "");
+  if (dataQ.startsWith("meta_deploy_")) {
+    const projectId = dataQ.replace("meta_deploy_", "");
     const project = findProject(chatId, projectId);
-    if (!project.name || !project.symbol) {
-      return bot.sendMessage(chatId, "❌ Metadata not deployed. You need to complete your Metadata.", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `meta_${projectId}` }]] } });
+    if (!project) return sendNeedProject(chatId);
+    if (!project.metadata.name || !project.metadata.symbol) {
+      return bot.sendMessage(chatId, "❌ Metadata not deployed. You need to complete your Metadata.");
     }
-    project.status = "✅ Metadata deployed";
-    saveData();
-    return bot.sendMessage(chatId, "✅ Metadata deployed", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `meta_${projectId}` }]] } });
+    return bot.sendMessage(chatId, "✅ Metadata deployed", { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `token_meta_${project.id}` }]] } });
   }
 
   // CLONE METADATA
-  if (dataCB.startsWith("clone_meta_")) {
-    return bot.sendMessage(chatId, "🚧 Clone Metadata feature is not finished yet. Will be available soon!", { reply_markup: { inline_keyboard: [[{ text: "OK", callback_data: "back_home" }]] } });
+  if (dataQ.startsWith("meta_clone_")) {
+    return bot.sendMessage(chatId, "🚧 Clone Metadata feature is not finished yet. Will be available soon!", {
+      reply_markup: { inline_keyboard: [[{ text: "OK", callback_data: `token_meta_${dataQ.replace("meta_clone_", "")}` }]] }
+    });
   }
 });
-
-// --------------------
-// HANDLE MESSAGE INPUTS (Metadata / Wallets)
-// --------------------
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text || "";
-  const projectId = userStates[chatId]?.projectId;
-  if (!projectId) return;
-  const project = findProject(chatId, projectId);
-  if (!project) return;
-
-  const field = userStates[chatId].field;
-  if (!field) return;
-
-  switch(field){
-    case "name": project.name = text; break;
-    case "symbol": project.symbol = text; break;
-    case "description": project.description = text; break;
-    case "twitter": project.twitter = text === "skip"?null:text; break;
-    case "telegram": project.telegram = text === "skip"?null:text; break;
-    case "website": project.website = text === "skip"?null:text; break;
-    case "wallet_create": project.wallets.push({ type:"user", keys:text.split("\n") }); break;
-    case "wallet_import": project.wallets.push({ type:"import", keys:text.split("\n") }); break;
-    case "wallet_creator": project.wallets.push({ type:"creator", keys:text.split("\n") }); break;
-  }
-
-  saveData();
-  delete userStates[chatId];
-  bot.sendMessage(chatId, `✅ Updated ${field}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: `meta_${projectId}` }]] } });
-});
-
-// --------------------
-// END OF FILE
-// --------------------
-console.log("✅ Bot fully loaded and ready!");
