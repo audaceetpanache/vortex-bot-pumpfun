@@ -85,7 +85,7 @@ const userStates = {}; // track user editing state
 // UTILITY FUNCTIONS
 // --------------------
 function sendNeedProject(chatId) {
-  bot.sendMessage(chatId, `⛔️ You need to launch a Project first`, {
+  bot.sendMessage(chatId, `⛔️ You need to create & launch a Project first`, {
     reply_markup: { inline_keyboard: [
       [{ text: "📁 Your Projects", callback_data: "my_projects" }, { text: "🚀 Create New Project", callback_data: "create_project" }],
       [{ text: "⬅️ Back", callback_data: "back_home" }],
@@ -103,7 +103,7 @@ function requireWalletPopup(chatId, projectId) {
 }
 
 function backHome(chatId, firstName = "friend") {
-  bot.sendMessage(chatId, `Yo ${firstName}! Welcome back! 🔥
+  bot.sendMessage(chatId, `Yo ${firstName}! Glad you're here! 🔥
   
 What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
 
@@ -140,15 +140,12 @@ ${(!md.name || !md.symbol) ? "❌ Metadata not yet deployed" : "✅ Metadata rea
     parse_mode: "HTML",
     reply_markup: {
       inline_keyboard: [
-        [{ text: `📝 Name: ${md.name || "Not set"}`, callback_data: `meta_name_${projectId}` }],
-        [{ text: `💎 Symbol: ${md.symbol || "Not set"}`, callback_data: `meta_symbol_${projectId}` }],
+        [{ text: `📝 Name: ${md.name || "Not set"}`, callback_data: `meta_name_${projectId}` }, { text: `💎 Symbol: ${md.symbol || "Not set"}`, callback_data: `meta_symbol_${projectId}` }],
         [{ text: `📋 Description: ${md.description ? "✅ Set" : "Not set"}`, callback_data: `meta_desc_${projectId}` }],
-        [{ text: `🐦 Twitter: ${md.twitter ? "✅ Set" : "Not set"}`, callback_data: `meta_twitter_${projectId}` }],
-        [{ text: `📱 Telegram: ${md.telegram ? "✅ Set" : "Not set"}`, callback_data: `meta_telegram_${projectId}` }],
+        [{ text: `🐦 Twitter: ${md.twitter ? "✅ Set" : "Not set"}`, callback_data: `meta_twitter_${projectId}` }, { text: `📱 Telegram: ${md.telegram ? "✅ Set" : "Not set"}`, callback_data: `meta_telegram_${projectId}` }],
         [{ text: `🌐 Website: ${md.website ? "✅ Set" : "Not set"}`, callback_data: `meta_website_${projectId}` }],
         [{ text: `🖼️ Image: ${md.image ? "✅ Set" : "Not set"}`, callback_data: `meta_image_${projectId}` }],
-        [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }],
-        [{ text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
+        [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }, { text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
         [{ text: "⬅️ Back", callback_data: "back_home" }]
       ]
     }
