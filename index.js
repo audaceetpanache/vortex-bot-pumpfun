@@ -284,7 +284,7 @@ bot.on('callback_query', async (query) => {
     if (platform === "pump") {
       const projectId = generateProjectId();
       const projects = getUserProjects(chatId);
-      const newProject = { id: projectId, name: "No name", metadata: {}, wallets: [], status: "In Progress" };
+      const newProject = { id: projectId, name: "Name not set", metadata: {}, wallets: [], status: "In Progress" };
       projects.push(newProject);
       saveData();
       return bot.sendMessage(chatId, `🚀 New Pump.fun Project Created\nProject ID: ${projectId}\nPlease set up your project by configuring:\n• Token Metadata (name, symbol, etc.)\n• Project Wallets\nWhat would you like to set up first?`, {
