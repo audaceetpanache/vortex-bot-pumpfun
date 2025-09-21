@@ -195,6 +195,31 @@ Safe Settings: Enabled`;
   });
 });
 
+bot.onText(/\/lsnipesettings/, (msg) => {
+  const chatId = msg.chat.id;
+  const text = `🎯 LSNIPE Settings - Preset: default
+  
+Current Settings:
+• Dev Buy: 0%
+• Dev Tip: 0 SOL
+• Snipe Wallet: 0%
+• Snipe Buy: 0
+• Snipe Tip: 0 SOL
+• Max Sniper: 0%
+• Risk Mode: ❌ Disabled`;
+  bot.sendMessage(chatId, text, {
+    reply_markup: { inline_keyboard: [
+      [{ text: "💰 Dev Buy: 0", callback_data: "need_project" }, { text: "💎 Dev Tip: 0", callback_data: "need_project" }],
+      [{ text: "🎯 Snipe Wallet: 0", callback_data: "need_project" }, { text: "💫 Snipe Buy: 0", callback_data: "need_project" }],
+      [{ text: "🌟 Snipe Tip: 0", callback_data: "need_project" }, { text: "🚀 Max Sniper: 0", callback_data: "need_project" }],
+      [{ text: "⚡️ Risk Mode: OFF", callback_data: "need_project" }],
+      [{ text: "📝 New Preset", callback_data: "need_project" }],
+      [{ text: "✅ default", callback_data: "need_project" }, { text: "✏️", callback_data: "need_project" }, { text: "🗑️", callback_data: "need_project" }],
+      [{ text: "⬅️ Back", callback_data: "back_home" }],
+    ]},
+  });
+});
+
 // --------------------
 // CALLBACK QUERIES
 // --------------------
