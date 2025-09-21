@@ -428,7 +428,7 @@ bot.on("message", (msg) => {
 
   const project = findProject(chatId, userState.projectId);
   if (!project) {
-    sendNeedProject(chatId); // pas de return illégal
+    sendNeedProject(chatId);
     return;
   }
 
@@ -436,42 +436,48 @@ bot.on("message", (msg) => {
   if (userState.type === "meta_name") {
     saveProjectField(userState.projectId, "name", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- SYMBOL ---
   if (userState.type === "meta_symbol") {
     saveProjectField(userState.projectId, "symbol", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- DESCRIPTION ---
   if (userState.type === "meta_description") {
     saveProjectField(userState.projectId, "description", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- TWITTER ---
   if (userState.type === "meta_twitter") {
     if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "twitter", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- TELEGRAM ---
   if (userState.type === "meta_telegram") {
     if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "telegram", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- WEBSITE ---
   if (userState.type === "meta_website") {
     if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "website", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 
   // --- IMAGE ---
@@ -481,10 +487,10 @@ bot.on("message", (msg) => {
       saveProjectField(userState.projectId, "image", fileId);
     }
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, userState.projectId);
+    sendTokenMetadataMenu(chatId, userState.projectId);
+    return;
   }
 });
-
 
   // --------------------
   // WALLET INPUT
