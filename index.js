@@ -61,7 +61,9 @@ function requireWalletPopup(chatId, projectId) {
 
 function backHome(chatId, firstName = "friend") {
   bot.sendMessage(chatId, `Yo ${firstName}! Welcome back! 🔥
+  
 What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+
 Hit the buttons below and let's make it happen:`, {
     reply_markup: {
       inline_keyboard: [
