@@ -387,69 +387,82 @@ Select a wallet to view details:`;
 // --------------------
 // MESSAGE HANDLER - BLOQUE 3
 // --------------------
-bot.on('message', async (msg) => {
+
+bot.on("message", (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
   const userState = userStates[chatId];
 
-  if (!userState) return; // Pas de flow en cours
+  if (!userState) return; // pas d'action en cours
 
-  // --------------------
-  // METADATA FIELDS
-  // --------------------
+  const project = findProject(chatId, userState.projectId);
+  if (!project) return sendNeedProject(chatId);
+
+  // --- NAME ---
   if (userState.type === "meta_name") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
     project.metadata.name = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Name set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
 
+  // --- SYMBOL ---
   if (userState.type === "meta_symbol") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
     project.metadata.symbol = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Symbol set to ${text}`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
 
-  if (userState.type === "meta_desc") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
+  // --- DESCRIPTION ---
+  if (userState.type === "meta_description") {
     project.metadata.description = text;
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Description saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
 
+  // --- TWITTER ---
   if (userState.type === "meta_twitter") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
-    project.metadata.twitter = text.toLowerCase() === "skip" ? null : text;
+    if (text.toLowerCase() !== "skip") {
+      project.metadata.twitter = text;
+    }
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Twitter saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
 
+  // --- TELEGRAM ---
   if (userState.type === "meta_telegram") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
-    project.metadata.telegram = text.toLowerCase() === "skip" ? null : text;
+    if (text.toLowerCase() !== "skip") {
+      project.metadata.telegram = text;
+    }
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Telegram saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
 
+  // --- WEBSITE ---
   if (userState.type === "meta_website") {
-    const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
-    project.metadata.website = text.toLowerCase() === "skip" ? null : text;
+    if (text.toLowerCase() !== "skip") {
+      project.metadata.website = text;
+    }
     saveData();
     delete userStates[chatId];
-    return bot.sendMessage(chatId, `✅ Website saved`, { reply_markup: { inline_keyboard: [[{ text: "⬅️ Back", callback_data: "back_home" }]] } });
+    return sendTokenMetadataMenu(chatId, project.id);
   }
+
+  // --- IMAGE ---
+  if (userState.type === "meta_image") {
+    if (msg.photo && msg.photo.length > 0) {
+      const fileId = msg.photo[msg.photo.length - 1].file_id; // meilleure qualité
+      project.metadata.image = fileId;
+      saveData();
+    }
+    delete userStates[chatId];
+    return sendTokenMetadataMenu(chatId, project.id);
+  }
+});
 
   // --------------------
   // WALLET INPUT
