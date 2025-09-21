@@ -109,8 +109,7 @@ Hit the buttons below and let's make it happen:`;
     [{ text: "🤑 BUMP BOT 🤑", callback_data: "need_project" }],
     [{ text: "💰 GET ALL SOL", callback_data: "need_project" }],
     [{ text: "🎁 CLAIM DEV REWARDS", callback_data: "need_project" }],
-    [{ text: "🔗 Referrals", callback_data: "need_project" }],
-    [{ text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" }],
+    [{ text: "🔗 Referrals", callback_data: "need_project" }, { text: "❓ Help", url: "https://deployonvortex.gitbook.io/documentation/" }],
     [{ text: "👥 Discord", url: "https://discord.com/invite/vortexdeployer" }],
   ]}};
   bot.sendMessage(chatId, text, opts);
