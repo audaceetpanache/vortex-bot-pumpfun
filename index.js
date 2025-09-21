@@ -81,7 +81,10 @@ Hit the buttons below and let's make it happen:`, {
 
 function sendTokenMetadataMenu(chatId, projectId) {
   const project = findProject(chatId, projectId);
-  if (!project) return sendNeedProject(chatId);
+  if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
 
   const md = project.metadata || {};
 
@@ -325,7 +328,10 @@ What would you like to set up first?`, {
   if (dataQ.startsWith("project_main_")) {
     const projectId = dataQ.replace("project_main_", "");
     const project = findProject(chatId, projectId);
-    if (!project) return sendNeedProject(chatId);
+    if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
 
     const text = `🏷 Project ${project.id}
     
@@ -376,7 +382,10 @@ What would you like to manage?`;
   if (dataQ.startsWith("token_meta_")) {
     const projectId = dataQ.replace("token_meta_", "");
     const project = findProject(chatId, projectId);
-    if (!project) return sendNeedProject(chatId);
+    if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
     const meta = project.metadata || {};
     const text = `🎯 Project ${project.id} Metadata
     
@@ -401,7 +410,10 @@ Select a field to edit:
   if (dataQ.startsWith("project_wallet_")) {
     const projectId = dataQ.replace("project_wallet_", "");
     const project = findProject(chatId, projectId);
-    if (!project) return sendNeedProject(chatId);
+    if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
     const text = `🏦 Project Wallets
     
 Project: ${project.id}
@@ -497,7 +509,10 @@ bot.on("message", (msg) => {
   // --------------------
   if (userState.type === "wallet_create" || userState.type === "wallet_import" || userState.type === "wallet_creator") {
     const project = findProject(chatId, userState.projectId);
-    if (!project) return sendNeedProject(chatId);
+    if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
     const keys = text.split("\n").map(k => k.trim()).filter(k => k.length > 0);
     if (userState.type === "wallet_create") {
       project.wallets.push(...keys.map(k => ({ type: "user", key: k })));
@@ -551,7 +566,10 @@ bot.on('callback_query', (query) => {
   if (dataQ.startsWith("meta_deploy_")) {
     const projectId = dataQ.replace("meta_deploy_", "");
     const project = findProject(chatId, projectId);
-    if (!project) return sendNeedProject(chatId);
+    if (!project) {
+  sendNeedProject(chatId);
+  return;
+}
     if (!project.metadata.name || !project.metadata.symbol) {
       return bot.sendMessage(chatId, "❌ Metadata not deployed. You need to complete your Metadata.");
     }
