@@ -338,8 +338,9 @@ Select a field to edit:
 ❌ Metadata not yet deployed`;
     const buttons = [
       [{ text: `📝 Name${meta.name ? ": " + meta.name : ""}`, callback_data: `meta_name_${projectId}` }, { text: `💎 Symbol${meta.symbol ? ": " + meta.symbol : ""}`, callback_data: `meta_symbol_${projectId}` }],
-      [{ text: `📋 Description${meta.description ? " ✅" : ""}`, callback_data: `meta_desc_${projectId}` }, { text: `🐦 Twitter${meta.twitter ? " ✅" : ""}`, callback_data: `meta_twitter_${projectId}` }],
-      [{ text: `📱 Telegram${meta.telegram ? " ✅" : ""}`, callback_data: `meta_telegram_${projectId}` }, { text: `🌐 Website${meta.website ? " ✅" : ""}`, callback_data: `meta_website_${projectId}` }],
+      [{ text: `📋 Description${meta.description ? " ✅" : ""}`, callback_data: `meta_desc_${projectId}` }],
+      [{ text: `🐦 Twitter${meta.twitter ? " ✅" : ""}`, callback_data: `meta_twitter_${projectId}` }, { text: `📱 Telegram${meta.telegram ? " ✅" : ""}`, callback_data: `meta_telegram_${projectId}` }],
+      [{ text: `🌐 Website${meta.website ? " ✅" : ""}`, callback_data: `meta_website_${projectId}` }],
       [{ text: `🖼️ Image${meta.image ? " ✅" : ""}`, callback_data: `meta_image_${projectId}` }],
       [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }, { text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
       [{ text: "⬅️ Back", callback_data: "back_home" }]
