@@ -84,7 +84,9 @@ Hit the buttons below and let's make it happen:`, {
 // --------------------
 bot.onText(/\/start/, (msg) => {
   bot.sendMessage(msg.chat.id, `🌟 Welcome to VORTEX!
+  
 🔥 Where Things Happen! 🔥
+
 Available Features:
 • Launch pump.fun tokens
 • Create or import multiple wallets
@@ -94,6 +96,7 @@ Available Features:
 • Delayed bundle on pump.fun
 • Advanced swap manager with intervals, sell all functions.
 • Anti-MEV protection
+
 Use /home to access all features
 Use /settings for configuration`);
 });
@@ -102,7 +105,9 @@ bot.onText(/\/home/, (msg) => {
   const chatId = msg.chat.id;
   const firstName = msg.from.first_name || "friend";
   const text = `Yo, ${firstName}! Glad you're here! 🔥
+  
 What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+
 Hit the buttons below and let's make it happen:`;
   const opts = { reply_markup: { inline_keyboard: [
     [{ text: "📁 Your Projects", callback_data: "my_projects" }, { text: "🚀 Create New Project", callback_data: "create_project" }],
@@ -119,6 +124,7 @@ Hit the buttons below and let's make it happen:`;
 bot.onText(/\/settings/, (msg) => {
   const chatId = msg.chat.id;
   const text = `⚙️ Settings
+  
 Current Settings:
 • Tip Amount: Disabled
 • Auto Tip: Enabled
@@ -141,6 +147,7 @@ Safe Settings: Enabled`;
 bot.onText(/\/lsnipesettings/, (msg) => {
   const chatId = msg.chat.id;
   const text = `🎯 LSNIPE Settings - Preset: default
+  
 Current Settings:
 • Dev Buy: 0%
 • Dev Tip: 0 SOL
@@ -161,12 +168,6 @@ Current Settings:
     ]},
   });
 });
-
-// --------------------
-// PROCHAIN BLOC
-// --------------------
-// Dans le Bloc 2, on va ajouter tous les flows “Create New Project”, “My Projects”, “FICHE PROJET”,
-// Token Metadata et Project Wallet, ligne par ligne comme dans ton brief.
 
 // --------------------
 // CALLBACK QUERIES - BLOQUE 2
@@ -210,7 +211,9 @@ bot.on('callback_query', async (query) => {
     const buttons = projects.map(p => [{ text: p.name || p.id, callback_data: `project_main_${p.id}` }]);
     buttons.push([{ text: "🚀 Create New Project", callback_data: "create_project" }]);
     buttons.push([{ text: "⬅️ Back", callback_data: "back_home" }]);
-    return bot.sendMessage(chatId, `Yo ${firstName}! Here's your project list 📋 Select a project to manage or create a new one:`, { reply_markup: { inline_keyboard: buttons } });
+    return bot.sendMessage(chatId, `Yo ${firstName}! Here's your project list 📋
+    
+    Select a project to manage or create a new one:`, { reply_markup: { inline_keyboard: buttons } });
   }
 
   // --------------------
@@ -219,8 +222,10 @@ bot.on('callback_query', async (query) => {
   if (dataQ === "create_project") {
     // ETAPE 1 - Project Type
     return bot.sendMessage(chatId, `🎯 Choose Project Type
+    
 • Create new coin on pump.fun
 • Make CTO on any pump.fun or raydium token
+
 Select your preferred option:`, {
       reply_markup: { inline_keyboard: [
         [{ text: "🚀 Create new coin", callback_data: "create_project_type_coin" }, { text: "🎯 Create CTO", callback_data: "create_project_type_cto" }],
@@ -238,9 +243,11 @@ Select your preferred option:`, {
   if (dataQ === "create_project_type_coin") {
     // ETAPE 2 - Platform
     return bot.sendMessage(chatId, `🎯 Choose Platform for Your New Coin
+    
 • Pump.fun - Classic Solana token launch
 • BONK - Launch with BONK pair
 • Ray Launchlab - Advanced token launch
+
 Select your preferred platform:`, {
       reply_markup: { inline_keyboard: [
         [{ text: "🚀 Pump.fun", callback_data: "create_project_platform_pump" }, { text: "💎 BONK", callback_data: "create_project_platform_bonk" }],
@@ -265,10 +272,13 @@ Select your preferred platform:`, {
     projects.push(newProject);
     saveData();
     return bot.sendMessage(chatId, `🚀 New Pump.fun Project Created
+    
 Project ID: ${projectId}
+
 Please set up your project by configuring:
 • Token Metadata (name, symbol, etc.)
 • Project Wallets
+
 What would you like to set up first?`, {
       reply_markup: { inline_keyboard: [
         [{ text: "📝 Token Metadata", callback_data: `token_meta_${projectId}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
@@ -287,9 +297,11 @@ What would you like to set up first?`, {
     if (!project) return sendNeedProject(chatId);
 
     const text = `🏷 Project ${project.id}
+    
 Name: ${project.metadata.name || "Not set"}
 Symbol: ${project.metadata.symbol || "Not set"}
 Status: ⏳ ${project.status}
+
 What would you like to manage?`;
     const buttons = [
       [{ text: "📝 Token Metadata", callback_data: `token_meta_${project.id}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${project.id}` }],
@@ -336,7 +348,9 @@ What would you like to manage?`;
     if (!project) return sendNeedProject(chatId);
     const meta = project.metadata || {};
     const text = `🎯 Project ${project.id} Metadata
+    
 Select a field to edit:
+
 ❌ Metadata not yet deployed`;
     const buttons = [
       [{ text: `📝 Name${meta.name ? ": " + meta.name : ""}`, callback_data: `meta_name_${projectId}` }, { text: `💎 Symbol${meta.symbol ? ": " + meta.symbol : ""}`, callback_data: `meta_symbol_${projectId}` }],
@@ -358,7 +372,9 @@ Select a field to edit:
     const project = findProject(chatId, projectId);
     if (!project) return sendNeedProject(chatId);
     const text = `🏦 Project Wallets
+    
 Project: ${project.id}
+
 Select a wallet to view details:`;
     const buttons = [
       [{ text: "✚ Create Wallet", callback_data: `wallet_create_${projectId}` }, { text: "📥 Import Wallet", callback_data: `wallet_import_${projectId}` }],
