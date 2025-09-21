@@ -1,3 +1,7 @@
+import { testConnection } from './db.js';
+
+testConnection();
+
 // --------------------
 // IMPORTS & CONFIG
 // --------------------
