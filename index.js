@@ -305,6 +305,12 @@ bot.on('callback_query', async (query) => {
     }
   }
 
+  // NEED WALLET
+  if (dataQ.startsWith("need_wallet_")) {
+  const projectId = dataQ.replace("need_wallet_", "");
+  return requireWalletPopup(chatId, projectId);
+}
+
   // --------------------
   // PROJECT MAIN MENU
   // --------------------
