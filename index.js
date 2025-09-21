@@ -294,9 +294,10 @@ What would you like to manage?`;
       [{ text: "🔫 Wallet Warmup", callback_data: `need_wallet_${project.id}` }, { text: "💱 Swap Manager", callback_data: `need_wallet_${project.id}` }],
       [{ text: "🧠 Smart Sell", callback_data: `need_wallet_${project.id}` }],
       [{ text: "🎯 Auto TP", callback_data: `need_wallet_${project.id}` }, { text: "🤖 Market Maker", callback_data: `need_wallet_${project.id}` }],
-      [{ text: "🔑 GET CA", callback_data: `need_wallet_${project.id}` }, { text: "🚀 Launch", callback_data: `need_wallet_${project.id}` }],
-      [{ text: "🎯 Launch with Bundle", callback_data: `need_wallet_${project.id}` }, { text: "🚀🎯 Launch + Snipe", callback_data: `need_wallet_${project.id}` }],
-      [{ text: "🎯🚀 Launch Bundle Snipe", callback_data: `need_wallet_${project.id}` }, { text: "🔴 X LAUNCH", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🔑 GET CA", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🚀 Launch", callback_data: `need_wallet_${project.id}` }, { text: "🎯 Launch with Bundle", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🚀🎯 Launch + Snipe", callback_data: `need_wallet_${project.id}` }, { text: "🎯🚀 Launch Bundle Snipe", callback_data: `need_wallet_${project.id}` }],
+      [{ text: "🔴 X LAUNCH", callback_data: `need_wallet_${project.id}` }],
       [{ text: "🗑️ Delete Project", callback_data: `delete_project_${project.id}` }],
       [{ text: "⬅️ Back", callback_data: "back_home" }]
     ];
