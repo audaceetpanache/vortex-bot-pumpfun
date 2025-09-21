@@ -155,8 +155,7 @@ Current Settings:
       [{ text: "🌟 Snipe Tip: 0", callback_data: "need_project" }, { text: "🚀 Max Sniper: 0", callback_data: "need_project" }],
       [{ text: "⚡️ Risk Mode: OFF", callback_data: "need_project" }],
       [{ text: "📝 New Preset", callback_data: "need_project" }],
-      [{ text: "✅ default", callback_data: "need_project" }],
-      [{ text: "✏️", callback_data: "need_project" }, { text: "🗑️", callback_data: "need_project" }],
+      [{ text: "✅ default", callback_data: "need_project" }, { text: "✏️", callback_data: "need_project" }, { text: "🗑️", callback_data: "need_project" }],
       [{ text: "⬅️ Back", callback_data: "back_home" }],
     ]},
   });
