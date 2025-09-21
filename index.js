@@ -79,6 +79,37 @@ Hit the buttons below and let's make it happen:`, {
   });
 }
 
+function sendTokenMetadataMenu(chatId, projectId) {
+  const project = findProject(chatId, projectId);
+  if (!project) return sendNeedProject(chatId);
+
+  const md = project.metadata || {};
+
+  const text = `
+🎯 Project ${projectId} Metadata
+Select a field to edit:
+${(!md.name || !md.symbol) ? "❌ Metadata not yet deployed" : "✅ Metadata ready"}
+`;
+
+  bot.sendMessage(chatId, text, {
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: `📝 Name: ${md.name || "Not set"}`, callback_data: `metadata_name_${projectId}` }],
+        [{ text: `💎 Symbol: ${md.symbol || "Not set"}`, callback_data: `metadata_symbol_${projectId}` }],
+        [{ text: `📋 Description: ${md.description ? "✅ Set" : "Not set"}`, callback_data: `metadata_description_${projectId}` }],
+        [{ text: `🐦 Twitter: ${md.twitter ? "✅ Set" : "Not set"}`, callback_data: `metadata_twitter_${projectId}` }],
+        [{ text: `📱 Telegram: ${md.telegram ? "✅ Set" : "Not set"}`, callback_data: `metadata_telegram_${projectId}` }],
+        [{ text: `🌐 Website: ${md.website ? "✅ Set" : "Not set"}`, callback_data: `metadata_website_${projectId}` }],
+        [{ text: `🖼️ Image: ${md.image ? "✅ Set" : "Not set"}`, callback_data: `metadata_image_${projectId}` }],
+        [{ text: "🚀 DEPLOY METADATA", callback_data: `metadata_deploy_${projectId}` }],
+        [{ text: "🔄 CLONE METADATA", callback_data: `metadata_clone_${projectId}` }],
+        [{ text: "⬅️ Back", callback_data: `project_menu_${projectId}` }]
+      ]
+    }
+  });
+}
+
 // --------------------
 // COMMANDS
 // --------------------
