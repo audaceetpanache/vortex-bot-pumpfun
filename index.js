@@ -143,7 +143,7 @@ ${(!md.name || !md.symbol) ? "❌ Metadata not yet deployed" : "✅ Metadata rea
         [{ text: `🖼️ Image: ${md.image ? "✅ Set" : "Not set"}`, callback_data: `meta_image_${projectId}` }],
         [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }],
         [{ text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
-        [{ text: "⬅️ Back", callback_data: `project_menu_${projectId}` }]
+        [{ text: "⬅️ Back", callback_data: "back_home" }]
       ]
     }
   });
