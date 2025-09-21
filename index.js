@@ -49,6 +49,12 @@ function saveProjectField(projectId, field, value) {
     if (project) {
       if (!project.metadata) project.metadata = {};
       project.metadata[field] = value;
+
+      // Si on modifie le "name", on met à jour le nom du projet aussi
+      if (field === "name") {
+        project.name = value;
+      }
+
       saveData();
       break;
     }
