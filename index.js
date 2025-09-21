@@ -42,7 +42,7 @@ const userStates = {}; // track user editing state
 // UTILITIES
 // --------------------
 function sendNeedProject(chatId) {
-  bot.sendMessage(chatId, `⛔️ Access not allowed\nYou need to launch a Project first`, {
+  bot.sendMessage(chatId, `⛔️ You need to launch a Project first`, {
     reply_markup: { inline_keyboard: [
       [{ text: "📁 Your Projects", callback_data: "my_projects" }, { text: "🚀 Create New Project", callback_data: "create_project" }],
       [{ text: "⬅️ Back", callback_data: "back_home" }],
@@ -60,7 +60,7 @@ function requireWalletPopup(chatId, projectId) {
 }
 
 function backHome(chatId, firstName = "friend") {
-  bot.sendMessage(chatId, `Yo, ${firstName}! Glad you're here! 🔥
+  bot.sendMessage(chatId, `Yo ${firstName}! Welcome back! 🔥
 What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
 Hit the buttons below and let's make it happen:`, {
     reply_markup: {
