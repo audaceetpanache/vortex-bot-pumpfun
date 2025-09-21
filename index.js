@@ -44,8 +44,7 @@ const userStates = {}; // track user editing state
 function sendNeedProject(chatId) {
   bot.sendMessage(chatId, `⛔️ Access not allowed\nYou need to launch a Project first`, {
     reply_markup: { inline_keyboard: [
-      [{ text: "📁 Your Projects", callback_data: "my_projects" }],
-      [{ text: "🚀 Create New Project", callback_data: "create_project" }],
+      [{ text: "📁 Your Projects", callback_data: "my_projects" }, { text: "🚀 Create New Project", callback_data: "create_project" }],
       [{ text: "⬅️ Back", callback_data: "back_home" }],
     ]},
   });
@@ -201,7 +200,7 @@ bot.on('callback_query', async (query) => {
       return bot.sendMessage(chatId, `Yo ${firstName}, you don’t have any Project yet! Let’s start a new one!`, {
         reply_markup: { inline_keyboard: [
           [{ text: "🚀 Create New Project", callback_data: "create_project" }],
-          [{ text: "⬅️ Back", callback_data: "back_home" }]
+          [{ text: "⬅️ Back", callback_data: "back_home" }],
         ]}
       });
     }
@@ -223,7 +222,7 @@ bot.on('callback_query', async (query) => {
 Select your preferred option:`, {
       reply_markup: { inline_keyboard: [
         [{ text: "🚀 Create new coin", callback_data: "create_project_type_coin" }, { text: "🎯 Create CTO", callback_data: "create_project_type_cto" }],
-        [{ text: "⬅️ Back", callback_data: "back_home" }]
+        [{ text: "⬅️ Back", callback_data: "back_home" }],
       ]}
     });
   }
@@ -244,7 +243,7 @@ Select your preferred platform:`, {
       reply_markup: { inline_keyboard: [
         [{ text: "🚀 Pump.fun", callback_data: "create_project_platform_pump" }, { text: "💎 BONK", callback_data: "create_project_platform_bonk" }],
         [{ text: "🌟 Ray Launchlab", callback_data: "create_project_platform_ray" }],
-        [{ text: "⬅️ Back", callback_data: "back_home" }]
+        [{ text: "⬅️ Back", callback_data: "back_home" }],
       ]}
     });
   }
@@ -271,7 +270,8 @@ Please set up your project by configuring:
 What would you like to set up first?`, {
       reply_markup: { inline_keyboard: [
         [{ text: "📝 Token Metadata", callback_data: `token_meta_${projectId}` }, { text: "👛 Project Wallet", callback_data: `project_wallet_${projectId}` }],
-        [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }, { text: "⬅️ Back", callback_data: "back_home" }]
+        [{ text: "🗑️ Delete Project", callback_data: `delete_project_${projectId}` }],
+        [{ text: "⬅️ Back", callback_data: "back_home" }],
       ]}
     });
   }
@@ -299,7 +299,7 @@ What would you like to manage?`;
       [{ text: "🚀🎯 Launch + Snipe", callback_data: `need_wallet_${project.id}` }, { text: "🎯🚀 Launch Bundle Snipe", callback_data: `need_wallet_${project.id}` }],
       [{ text: "🔴 X LAUNCH", callback_data: `need_wallet_${project.id}` }],
       [{ text: "🗑️ Delete Project", callback_data: `delete_project_${project.id}` }],
-      [{ text: "⬅️ Back", callback_data: "back_home" }]
+      [{ text: "⬅️ Back", callback_data: "back_home" }],
     ];
     return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
@@ -343,7 +343,7 @@ Select a field to edit:
       [{ text: `🌐 Website${meta.website ? " ✅" : ""}`, callback_data: `meta_website_${projectId}` }],
       [{ text: `🖼️ Image${meta.image ? " ✅" : ""}`, callback_data: `meta_image_${projectId}` }],
       [{ text: "🚀 DEPLOY METADATA", callback_data: `meta_deploy_${projectId}` }, { text: "🔄 CLONE METADATA", callback_data: `meta_clone_${projectId}` }],
-      [{ text: "⬅️ Back", callback_data: "back_home" }]
+      [{ text: "⬅️ Back", callback_data: "back_home" }],
     ];
     return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
@@ -361,7 +361,7 @@ Select a wallet to view details:`;
     const buttons = [
       [{ text: "✚ Create Wallet", callback_data: `wallet_create_${projectId}` }, { text: "📥 Import Wallet", callback_data: `wallet_import_${projectId}` }],
       [{ text: "👑 Import Creator", callback_data: `wallet_creator_${projectId}` }],
-      [{ text: "⬅️ Back to Project", callback_data: "back_home" }]
+      [{ text: "⬅️ Back to Project", callback_data: "back_home" }],
     ];
     return bot.sendMessage(chatId, text, { reply_markup: { inline_keyboard: buttons } });
   }
