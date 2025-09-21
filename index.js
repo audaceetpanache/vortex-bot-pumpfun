@@ -193,7 +193,7 @@ Safe Settings: Enabled`;
       [{ text: "⚡️ PRIO: 0.0005 SOL", callback_data: "need_project" }, { text: "📈 BUY SLIP: 15%", callback_data: "need_project" }, { text: "📉 SELL SLIP: 15%", callback_data: "need_project" }],
       [{ text: "🔓 UI SECURITY: 🟢", callback_data: "need_project" }],
       [{ text: "⬅️ Back", callback_data: "back_home" }],
-      [{ text: "🎯 LSNIPE Settings", callback_data: "lsnipe_settings" }, { text: "📦 LBS Settings", callback_data: "need_project" }],
+      [{ text: "🎯 LSNIPE Settings", callback_data: "need_project" }, { text: "📦 LBS Settings", callback_data: "need_project" }],
     ]},
   });
 });
