@@ -427,73 +427,64 @@ bot.on("message", (msg) => {
   if (!userState) return; // pas d'action en cours
 
   const project = findProject(chatId, userState.projectId);
-  if (!project) return sendNeedProject(chatId);
+  if (!project) {
+    sendNeedProject(chatId); // pas de return illégal
+    return;
+  }
 
   // --- NAME ---
   if (userState.type === "meta_name") {
-    project.metadata.name = text;
-    saveData();
+    saveProjectField(userState.projectId, "name", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- SYMBOL ---
   if (userState.type === "meta_symbol") {
-    project.metadata.symbol = text;
-    saveData();
+    saveProjectField(userState.projectId, "symbol", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- DESCRIPTION ---
   if (userState.type === "meta_description") {
-    project.metadata.description = text;
-    saveData();
+    saveProjectField(userState.projectId, "description", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- TWITTER ---
   if (userState.type === "meta_twitter") {
-    if (text.toLowerCase() !== "skip") {
-      project.metadata.twitter = text;
-    }
-    saveData();
+    if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "twitter", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- TELEGRAM ---
   if (userState.type === "meta_telegram") {
-    if (text.toLowerCase() !== "skip") {
-      project.metadata.telegram = text;
-    }
-    saveData();
+    if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "telegram", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- WEBSITE ---
   if (userState.type === "meta_website") {
-    if (text.toLowerCase() !== "skip") {
-      project.metadata.website = text;
-    }
-    saveData();
+    if (text.toLowerCase() !== "skip") saveProjectField(userState.projectId, "website", text);
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 
   // --- IMAGE ---
   if (userState.type === "meta_image") {
     if (msg.photo && msg.photo.length > 0) {
       const fileId = msg.photo[msg.photo.length - 1].file_id; // meilleure qualité
-      project.metadata.image = fileId;
-      saveData();
+      saveProjectField(userState.projectId, "image", fileId);
     }
     delete userStates[chatId];
-    return sendTokenMetadataMenu(chatId, project.id);
+    return sendTokenMetadataMenu(chatId, userState.projectId);
   }
 });
+
 
   // --------------------
   // WALLET INPUT
